@@ -18,7 +18,7 @@ namespace SerialScope
             MinimizeBox = false;
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.CenterParent;
-            ClientSize = new Size(380, 250);
+            ClientSize = new Size(400, 340);
             BackColor = theme.Window;
             ForeColor = theme.Text;
 
@@ -50,24 +50,29 @@ namespace SerialScope
             });
             layout.Controls.Add(new Label
             {
-                Text = "A clean, lightweight serial monitor for Windows.\nReleased under the " + AppInfo.License + ".",
+                Text = "A clean, lightweight serial monitor and plotter for Windows.\nReleased under the " + AppInfo.License + ".",
                 AutoSize = true,
-                Margin = new Padding(0, 0, 0, 10)
+                Margin = new Padding(0, 0, 0, 16)
             });
 
-            var link = new LinkLabel
+            // Creator section
+            layout.Controls.Add(new Label
             {
-                Text = AppInfo.RepoUrl.Replace("https://", ""),
+                Text = "CREATED BY",
                 AutoSize = true,
-                LinkColor = theme.IsDark ? Color.FromArgb(125, 170, 255) : Color.FromArgb(37, 99, 235),
-                ActiveLinkColor = theme.Text,
-                Margin = new Padding(0, 0, 0, 0)
-            };
-            link.LinkClicked += delegate
+                ForeColor = theme.Muted,
+                Font = new Font("Segoe UI Semibold", 8F),
+                Margin = new Padding(0, 0, 0, 2)
+            });
+            layout.Controls.Add(new Label
             {
-                try { Process.Start(AppInfo.RepoUrl); } catch (Exception) { }
-            };
-            layout.Controls.Add(link);
+                Text = AppInfo.Author,
+                AutoSize = true,
+                Font = new Font("Segoe UI Semibold", 11F),
+                Margin = new Padding(0, 0, 0, 2)
+            });
+            layout.Controls.Add(MakeLink(theme, "GitHub: @" + AppInfo.GitHubUser, AppInfo.ProfileUrl, new Padding(0, 0, 0, 8)));
+            layout.Controls.Add(MakeLink(theme, "Source code: " + AppInfo.RepoUrl.Replace("https://", ""), AppInfo.RepoUrl, Padding.Empty));
 
             var close = new FlatButton("Close", ButtonKind.Normal);
             close.ApplyTheme(theme);
@@ -81,6 +86,25 @@ namespace SerialScope
             Controls.Add(close);
             Controls.Add(layout);
             close.BringToFront();
+        }
+
+        private static LinkLabel MakeLink(Theme theme, string text, string url, Padding margin)
+        {
+            var link = new LinkLabel
+            {
+                Text = text,
+                AutoSize = true,
+                LinkColor = theme.Success,
+                VisitedLinkColor = theme.Success,
+                ActiveLinkColor = theme.Text,
+                LinkBehavior = LinkBehavior.HoverUnderline,
+                Margin = margin
+            };
+            link.LinkClicked += delegate
+            {
+                try { Process.Start(url); } catch (Exception) { }
+            };
+            return link;
         }
 
         protected override void OnHandleCreated(EventArgs e)

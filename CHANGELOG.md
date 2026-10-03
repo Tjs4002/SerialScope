@@ -22,5 +22,6 @@ First public release.
 - Dark and light themes, with a dark title bar and scroll bars.
 - Keyboard shortcuts and adjustable text size.
 - Saved preferences: port, baud rate, theme, options, font size and window size.
+- Creator credit with GitHub profile link in the status bar and About dialog.
 
 [1.0.0]: https://github.com/Tjs4002/SerialScope/releases/tag/v1.0.0

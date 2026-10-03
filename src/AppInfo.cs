@@ -18,6 +18,8 @@ namespace SerialScope
         public const string Name = "SerialScope";
         public const string Version = "1.0.0";
         public const string Author = "Tejas";
+        public const string GitHubUser = "Tjs4002";
+        public const string ProfileUrl = "https://github.com/Tjs4002";
         public const string RepoUrl = "https://github.com/Tjs4002/SerialScope";
         public const string License = "MIT License";
     }

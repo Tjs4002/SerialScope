@@ -56,6 +56,8 @@ namespace SerialScope
         private readonly FlatComboBox plotPointsBox = new FlatComboBox();
         private readonly StringBuilder plotLine = new StringBuilder();
         private bool plotMode;
+        private readonly Label creditSeparator = new Label();
+        private readonly LinkLabel creditLink = new LinkLabel();
         private readonly SplitContainer plotSplit = new SplitContainer();
         private double plotSplitRatio = 0.7;
         private readonly FlatButton recordButton = new FlatButton("●  Record", ButtonKind.Normal);
@@ -252,8 +254,27 @@ namespace SerialScope
             statsLabel.AutoSize = true;
             statsLabel.Padding = new Padding(0, 6, 0, 0);
             statsLabel.Tag = "muted";
+            // Credit: "Made by Tejas · @Tjs4002", the handle opens the GitHub profile
+            var credit = new FlowLayoutPanel { Dock = DockStyle.Right, AutoSize = true, WrapContents = false, Padding = new Padding(0, 6, 0, 0), Tag = "surface" };
+            creditSeparator.Text = "|";
+            creditSeparator.AutoSize = true;
+            creditSeparator.Margin = new Padding(14, 0, 14, 0);
+            creditSeparator.Tag = "muted";
+            credit.Controls.Add(creditSeparator);
+            var madeBy = new Label { Text = "Made by " + AppInfo.Author + "  ·", AutoSize = true, Margin = new Padding(0), Tag = "muted" };
+            credit.Controls.Add(madeBy);
+            creditLink.Text = "@" + AppInfo.GitHubUser;
+            creditLink.AutoSize = true;
+            creditLink.Margin = new Padding(2, 0, 0, 0);
+            creditLink.LinkBehavior = LinkBehavior.HoverUnderline;
+            creditLink.Cursor = Cursors.Hand;
+            creditLink.LinkClicked += delegate { OpenUrl(AppInfo.ProfileUrl); };
+            tips.SetToolTip(creditLink, "Open " + AppInfo.ProfileUrl.Replace("https://", "") + " on GitHub");
+            credit.Controls.Add(creditLink);
+
             statusBar.Controls.Add(statusLeft);
             statusBar.Controls.Add(statsLabel);
+            statusBar.Controls.Add(credit);
 
             // Last added docks outermost
             Controls.Add(outputHost);
@@ -339,6 +360,9 @@ namespace SerialScope
             themeButton.Text = t.IsDark ? "" : "";   // sun in dark mode, moon in light mode
             Theme.ApplyTitleBar(this, t.IsDark);
             NativeMethods.SetScrollBarTheme(output, t.IsDark);
+            creditLink.LinkColor = t.Success;
+            creditLink.ActiveLinkColor = t.Text;
+            creditLink.VisitedLinkColor = t.Success;
             plotSplit.BackColor = t.Border;   // the divider
             plotSplit.Panel1.BackColor = t.OutputBack;
             plotSplit.Panel2.BackColor = t.OutputBack;
@@ -893,6 +917,11 @@ namespace SerialScope
         private void ShowMessage(string text, MessageBoxIcon icon)
         {
             MessageBox.Show(this, text, AppInfo.Name, MessageBoxButtons.OK, icon);
+        }
+
+        private static void OpenUrl(string url)
+        {
+            try { System.Diagnostics.Process.Start(url); } catch (Exception) { }
         }
 
         private void ShowAbout()
