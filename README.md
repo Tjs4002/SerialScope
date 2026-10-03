@@ -24,7 +24,7 @@
 
 <br>
 
-**SerialScope** is a fast, good-looking serial monitor and plotter for Windows. Open it, pick your board's port and see what it's saying, as text or as live graphs. It's a single 50 KB `.exe`, with nothing to install.
+**SerialScope** is a fast, good-looking serial monitor and plotter for Windows. Open it, pick your board's port and see what it's saying, as text or as live graphs. It's a single `.exe` of about 150 KB, with nothing to install.
 
 <table>
   <tr>
