@@ -211,4 +211,4 @@ If SerialScope saves you time, a ⭐ on the repo helps other people find it.
 
 ## License
 
-Released under the [MIT License](LICENSE). © 2026 Tejas
+Released under the [MIT License](LICENSE). © 2026 Tjs4002

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("A clean, lightweight serial monitor for Windows.")]
 [assembly: AssemblyCompany("Tejas")]
 [assembly: AssemblyProduct("SerialScope")]
-[assembly: AssemblyCopyright("Copyright (c) 2026 Tejas")]
+[assembly: AssemblyCopyright("Copyright (c) 2026 Tjs4002")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: AssemblyInformationalVersion("1.0.0")]
