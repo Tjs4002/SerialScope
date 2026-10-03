@@ -69,6 +69,11 @@ namespace SerialScope
         [DllImport("user32.dll")]
         private static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
 
+        [DllImport("user32.dll")]
+        private static extern IntPtr SendMessage(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam);
+
+        private const int WM_NCACTIVATE = 0x0086;
+
         // Dark title bar on Windows 10 1809+ / Windows 11; silently ignored elsewhere
         public static void ApplyTitleBar(Form form, bool dark)
         {
@@ -80,6 +85,13 @@ namespace SerialScope
                     DwmSetWindowAttribute(form.Handle, 19, ref value, sizeof(int));
                 // Make Windows repaint the frame now rather than on the next activation
                 SetWindowPos(form.Handle, IntPtr.Zero, 0, 0, 0, 0, 0x0027);   // NOSIZE | NOMOVE | NOZORDER | FRAMECHANGED
+                if (form.Visible)
+                {
+                    // Windows 10 only redraws the caption colour on (de)activation, so nudge it
+                    bool active = Form.ActiveForm == form;
+                    SendMessage(form.Handle, WM_NCACTIVATE, (IntPtr)(active ? 0 : 1), IntPtr.Zero);
+                    SendMessage(form.Handle, WM_NCACTIVATE, (IntPtr)(active ? 1 : 0), IntPtr.Zero);
+                }
             }
             catch (Exception)
             {

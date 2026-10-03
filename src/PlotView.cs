@@ -603,7 +603,8 @@ namespace SerialScope
                         label = ((long)t).ToString();
                     }
                     Size size = TextRenderer.MeasureText(label, labelFont);
-                    TextRenderer.DrawText(g, label, labelFont, new Point((int)x - size.Width / 2, area.Bottom + 5), theme.Muted);
+                    int lx = Math.Max(area.Left - 6, Math.Min(area.Right - size.Width + 4, (int)x - size.Width / 2));   // keep labels on screen
+                    TextRenderer.DrawText(g, label, labelFont, new Point(lx, area.Bottom + 5), theme.Muted);
                 }
             }
 

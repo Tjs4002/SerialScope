@@ -73,12 +73,12 @@
 
 <table>
   <tr>
-    <td><img src="docs/screenshot-dark.png" alt="SerialScope in dark mode showing ESP32 boot output"></td>
-    <td><img src="docs/screenshot-light.png" alt="SerialScope in light mode"></td>
+    <td><img src="docs/screenshot-dark.png" alt="SerialScope highlighting errors in red and warnings in amber from an ESP32"></td>
+    <td><img src="docs/screenshot-light.png" alt="SerialScope plotter with a time axis in light mode"></td>
   </tr>
   <tr>
-    <td align="center"><sub>Dark theme</sub></td>
-    <td align="center"><sub>Light theme</sub></td>
+    <td align="center"><sub>Error and warning highlighting (dark theme)</sub></td>
+    <td align="center"><sub>Live plotter with time axis (light theme)</sub></td>
   </tr>
 </table>
 

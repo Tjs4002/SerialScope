@@ -752,6 +752,10 @@ namespace SerialScope
                 return false;
             }
 
+            // Drop anything the driver buffered before we opened the port. It is stale, and after a
+            // firmware upload it was received at the uploader's baud rate, so it would show as garbage.
+            try { sp.DiscardInBuffer(); } catch (Exception) { }
+
             port = sp;
             portLost = false;
             decoder.Reset();
