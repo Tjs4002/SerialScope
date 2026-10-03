@@ -3,7 +3,7 @@
 All notable changes to SerialScope are listed here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
-## [1.2.0] - Unreleased
+## [1.2.0] - 2026-10-04
 
 ### Added
 - **Port settings:** data bits, parity, stop bits, flow control (RTS/CTS, XON/XOFF) and DTR/RTS, from the new 8N1 button. Changes apply while connected.
