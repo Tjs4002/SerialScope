@@ -3,6 +3,28 @@
 All notable changes to SerialScope are listed here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - Unreleased
+
+### Added
+- **Port settings:** data bits, parity, stop bits, flow control (RTS/CTS, XON/XOFF) and DTR/RTS, from the new 8N1 button. Changes apply while connected.
+- **Highlight rules:** colour lines by word or regular expression (⚙ Settings → Highlight rules…).
+- **Filter:** show only, or hide, the lines that match the search text. Applies to everything already received.
+- **Plotter statistics:** min, max and average of the visible readings in the legend (Stats button).
+- **New window** (<kbd>Ctrl</kbd>+<kbd>N</kbd>) for working with several devices at once; it opens on a different port.
+- **Command-line options:** `--port`, `--baud`, `--connect`, `--plot`, `--text`, `--hex`, `--log`, `--theme`, `--help`.
+- **Portable mode:** settings and logs next to the exe.
+- **Crash screen** with a copy of the details and a button that opens a pre-filled bug report.
+- **Automated tests**, run on every GitHub build.
+
+### Changed
+- Settings are merged when saving, so several open windows don't overwrite each other.
+- Changing the theme, highlighting or rules now redraws the existing output from a line history.
+
+### Fixed
+- Garbage characters right after a firmware upload (stale data from the USB-serial driver is now discarded on connect).
+- Auto-reconnect and highlighting turning themselves back on at startup after being switched off.
+- Title bar not switching to the light theme straight away on Windows 10, and plotter time labels clipped at the edge.
+
 ## [1.1.0] - 2026-10-04
 
 ### Added
@@ -43,5 +65,6 @@ First public release.
 - Saved preferences: port, baud rate, theme, options, font size and window size.
 - Creator credit with GitHub profile link in the status bar and About dialog.
 
+[1.2.0]: https://github.com/Tjs4002/SerialScope/releases/tag/v1.2.0
 [1.1.0]: https://github.com/Tjs4002/SerialScope/releases/tag/v1.1.0
 [1.0.0]: https://github.com/Tjs4002/SerialScope/releases/tag/v1.0.0

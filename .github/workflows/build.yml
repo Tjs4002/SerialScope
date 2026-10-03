@@ -24,6 +24,33 @@ jobs:
         shell: cmd
         run: build.bat
 
+      # Code signing through SignPath Foundation (free for open source). Skipped until the
+      # repository has a SIGNPATH_API_TOKEN secret and a SIGNPATH_ORGANIZATION_ID variable.
+      - name: Upload unsigned exe for signing
+        id: unsigned
+        if: startsWith(github.ref, 'refs/tags/v') && vars.SIGNPATH_ORGANIZATION_ID != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: SerialScope-unsigned
+          path: bin/SerialScope.exe
+
+      - name: Sign with SignPath
+        if: startsWith(github.ref, 'refs/tags/v') && vars.SIGNPATH_ORGANIZATION_ID != ''
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: SerialScope
+          signing-policy-slug: release-signing
+          github-artifact-id: ${{ steps.unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: signed
+
+      - name: Use the signed exe
+        if: startsWith(github.ref, 'refs/tags/v') && vars.SIGNPATH_ORGANIZATION_ID != ''
+        shell: pwsh
+        run: Copy-Item signed/SerialScope.exe bin/SerialScope.exe -Force
+
       - name: Prepare release files
         shell: pwsh
         run: |
