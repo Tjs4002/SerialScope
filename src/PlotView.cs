@@ -44,7 +44,7 @@ namespace SerialScope
             public bool Visible = true;
         }
 
-        private enum OverlayAction { ZoomOut, ZoomIn, Fit, Live, TimeAxis, Range }
+        private enum OverlayAction { ZoomOut, ZoomIn, Fit, Live, TimeAxis, Range, Stats }
 
         // Raised when the user clicks "Y range..."; the host shows a dialog and calls SetFixedRange
         public event EventHandler RangeRequested;
@@ -72,6 +72,7 @@ namespace SerialScope
         private bool fixedRange;           // user-set value range that Fit keeps
         private double fixedMin, fixedMax;
         private bool timeAxis;             // label the bottom axis with clock time instead of reading numbers
+        private bool showStats;            // min / max / average of the visible part in the legend
         private readonly long[] times = new long[History];   // arrival time of each stored reading
         private bool exporting;            // drawing for "Save image": no buttons or hover box
 
@@ -497,6 +498,7 @@ namespace SerialScope
                 case OverlayAction.Fit: Fit(); break;
                 case OverlayAction.Live: followLatest = true; Invalidate(); break;
                 case OverlayAction.TimeAxis: TimeAxis = !timeAxis; break;
+                case OverlayAction.Stats: ShowStats = !showStats; break;
                 case OverlayAction.Range: if (RangeRequested != null) RangeRequested(this, EventArgs.Empty); break;
             }
         }
@@ -670,6 +672,7 @@ namespace SerialScope
         {
             var items = new List<KeyValuePair<string, OverlayAction>>();
             if (!followLatest) items.Add(new KeyValuePair<string, OverlayAction>("Live ▸", OverlayAction.Live));
+            items.Add(new KeyValuePair<string, OverlayAction>("Stats", OverlayAction.Stats));
             items.Add(new KeyValuePair<string, OverlayAction>("Time axis", OverlayAction.TimeAxis));
             items.Add(new KeyValuePair<string, OverlayAction>(fixedRange ? "Y range ✓" : "Y range…", OverlayAction.Range));
             items.Add(new KeyValuePair<string, OverlayAction>("−", OverlayAction.ZoomOut));
@@ -685,7 +688,8 @@ namespace SerialScope
                 OverlayAction action = items[i].Value;
                 bool live = action == OverlayAction.Live
                             || (action == OverlayAction.TimeAxis && timeAxis)
-                            || (action == OverlayAction.Range && fixedRange);   // highlighted when active
+                            || (action == OverlayAction.Range && fixedRange)
+                            || (action == OverlayAction.Stats && showStats);   // highlighted when active
                 using (var b = new SolidBrush(live ? theme.Success : hover ? theme.SurfaceHover : theme.Surface))
                     g.FillRectangle(b, r);
                 using (var pen = new Pen(live ? theme.Success : theme.Border))
@@ -748,13 +752,57 @@ namespace SerialScope
             }
         }
 
-        // Legend across the top: colour swatch, name and latest value; click to show/hide
+        // Min / max / average of one series over a range of samples; false if it has no values there
+        public bool TryGetStats(string name, out double min, out double max, out double average)
+        {
+            double x0, x1;
+            GetXRange(out x0, out x1);
+            long s0 = Math.Max(FirstStored, (long)Math.Ceiling(x0));
+            long s1 = Math.Min(totalSamples - 1, (long)Math.Floor(x1));
+            return Stats(Find(name), s0, s1, out min, out max, out average);
+        }
+
+        private bool Stats(Series s, long s0, long s1, out double min, out double max, out double average)
+        {
+            min = double.MaxValue; max = double.MinValue; average = 0;
+            if (s == null) return false;
+            double sum = 0;
+            long n = 0;
+            for (long k = s0; k <= s1; k++)
+            {
+                double v = ValueAt(s, k);
+                if (double.IsNaN(v)) continue;
+                if (v < min) min = v;
+                if (v > max) max = v;
+                sum += v;
+                n++;
+            }
+            if (n == 0) return false;
+            average = sum / n;
+            return true;
+        }
+
+        public bool ShowStats
+        {
+            get { return showStats; }
+            set { showStats = value; Invalidate(); }
+        }
+
+        // Legend across the top: colour swatch, name and latest value (plus min/max/avg of what's on screen
+        // when Stats is on); click a name to show/hide that line
         private int DrawLegend(Graphics g, Color[] palette)
         {
             int x = 14, y = 10, rowHeight = 22;
+            double vx0, vx1;
+            GetXRange(out vx0, out vx1);
+            long v0 = Math.Max(FirstStored, (long)Math.Ceiling(vx0));
+            long v1 = Math.Min(totalSamples - 1, (long)Math.Floor(vx1));
             foreach (Series s in series)
             {
                 string value = double.IsNaN(s.Last) ? "" : FormatValue(s.Last);
+                double mn, mx, avg;
+                if (showStats && Stats(s, v0, v1, out mn, out mx, out avg))
+                    value += "   min " + FormatValue(mn) + "  max " + FormatValue(mx) + "  avg " + FormatValue(avg);
                 int nameWidth = TextRenderer.MeasureText(s.Name, legendFont).Width;
                 int valueWidth = TextRenderer.MeasureText(value, valueFont).Width;
                 int itemWidth = 16 + nameWidth + 4 + valueWidth + 18;

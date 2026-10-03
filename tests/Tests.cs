@@ -132,6 +132,19 @@ namespace SerialScope.Tests
             Assert.Equal(40.0, v[1], "second value");
         }
 
+        [Test] public static void StatsOverVisibleReadings()
+        {
+            var plot = new PlotView();
+            for (int i = 1; i <= 10; i++) plot.AddLine("a:" + i + ",b:" + (i * -2));
+            double min, max, avg;
+            Assert.True(plot.TryGetStats("a", out min, out max, out avg), "stats for a");
+            Assert.Equal(1.0, min, "min");
+            Assert.Equal(10.0, max, "max");
+            Assert.Equal(5.5, avg, "average");
+            Assert.True(plot.TryGetStats("b", out min, out max, out avg) && min == -20 && max == -2, "stats for b");
+            Assert.True(!plot.TryGetStats("missing", out min, out max, out avg), "unknown series");
+        }
+
         [Test] public static void TextIsRejected()
         {
             List<string> n; List<double> v;

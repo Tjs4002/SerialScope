@@ -39,6 +39,7 @@ namespace SerialScope
         private readonly FlatButton clearButton = new FlatButton("", ButtonKind.Icon);
         private readonly FlatButton saveButton = new FlatButton("", ButtonKind.Icon);
         private readonly FlatButton settingsButton = new FlatButton("", ButtonKind.Icon);
+        private readonly FlatButton newWindowButton = new FlatButton("", ButtonKind.Icon);
         private readonly FlatButton themeButton = new FlatButton("", ButtonKind.Icon);
         private readonly FlatButton aboutButton = new FlatButton("", ButtonKind.Icon);
         private readonly ContextMenuStrip settingsMenu = new ContextMenuStrip();
@@ -190,11 +191,12 @@ namespace SerialScope
         public MainForm(CommandLine options)
         {
             startup = options;
+            if (options.Cascade) StartPosition = FormStartPosition.WindowsDefaultLocation;
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             Text = AppInfo.Name;
             Font = new Font("Segoe UI", 9F);
-            MinimumSize = new Size(900, 480);
+            MinimumSize = new Size(960, 480);
             StartPosition = FormStartPosition.CenterScreen;
             Size = new Size(settings.GetInt("width", 1000), settings.GetInt("height", 660));
             KeyPreview = true;
@@ -225,6 +227,7 @@ namespace SerialScope
             var actions = new FlowLayoutPanel { Dock = DockStyle.Right, AutoSize = true, WrapContents = false, Padding = Padding.Empty };
             AddIconButton(actions, clearButton, "Clear output (Ctrl+L)", delegate { ClearOutput(); });
             AddIconButton(actions, saveButton, "Save log (Ctrl+S)", delegate { SaveLog(); });
+            AddIconButton(actions, newWindowButton, "New window, for another device (Ctrl+N)", delegate { OpenNewWindow(); });
             AddIconButton(actions, settingsButton, "Settings", delegate { settingsMenu.Show(settingsButton, new Point(0, settingsButton.Height + 2)); });
             AddIconButton(actions, themeButton, "Switch light / dark theme", delegate { ToggleTheme(); });
             AddIconButton(actions, aboutButton, "About " + AppInfo.Name, delegate { ShowAbout(); });
@@ -590,6 +593,22 @@ namespace SerialScope
                     if (((PortInfo)portBox.Items[i]).Name == startup.Port) { portBox.SelectedIndex = i; break; }
                 }
             }
+        }
+
+        // Another window for a second device, preselecting a port this window isn't using
+        private void OpenNewWindow()
+        {
+            SavePreferences();   // the new window starts from this window's settings
+            string mine = port != null ? port.PortName : SelectedPortName();
+            string other = null;
+            foreach (object item in portBox.Items)
+            {
+                string name = ((PortInfo)item).Name;
+                if (name != mine) { other = name; break; }
+            }
+            string args = "--new-window" + (other != null ? " --port " + other : "");
+            try { System.Diagnostics.Process.Start(Application.ExecutablePath, args); }
+            catch (Exception ex) { ShowMessage("Couldn't open a new window.\n\n" + ex.Message, MessageBoxIcon.Warning); }
         }
 
         // Runs once the window is visible, so any message box appears on top of it
@@ -1857,6 +1876,7 @@ namespace SerialScope
             {
                 case Keys.F5: ToggleConnection(); return true;
                 case Keys.Control | Keys.F: ShowFindBar(); return true;
+                case Keys.Control | Keys.N: OpenNewWindow(); return true;
                 case Keys.F3: if (findBar.Visible) NextMatch(true); else ShowFindBar(); return true;
                 case Keys.Shift | Keys.F3: if (findBar.Visible) NextMatch(false); return true;
                 case Keys.Control | Keys.L: ClearOutput(); return true;

@@ -15,6 +15,7 @@ namespace SerialScope
         public bool Hex;
         public bool Log;
         public string Theme;        // "dark" or "light"
+        public bool Cascade;        // opened from "New window": let Windows place it offset from the others
         public bool ShowHelp;
         public readonly List<string> Errors = new List<string>();
 
@@ -29,6 +30,7 @@ namespace SerialScope
             "  --hex              Turn on hex view\n" +
             "  --log              Save a session log\n" +
             "  --theme dark|light Choose the theme\n" +
+            "  --new-window       Open offset from other SerialScope windows\n" +
             "  --help             Show this help\n\n" +
             "Example: SerialScope.exe --port COM3 --baud 115200 --connect --plot";
 
@@ -81,6 +83,8 @@ namespace SerialScope
                     case "h":
                     case "?":
                         c.ShowHelp = true; break;
+                    case "new-window":
+                        c.Cascade = true; break;
                     default:
                         // A bare "COM3" is taken as the port
                         if (a.StartsWith("COM", StringComparison.OrdinalIgnoreCase) && !a.StartsWith("-")) c.Port = a.ToUpperInvariant();
