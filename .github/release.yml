@@ -1,0 +1,11 @@
+# Groups automatically generated release notes by pull request label
+changelog:
+  categories:
+    - title: New features
+      labels: [enhancement, feature]
+    - title: Bug fixes
+      labels: [bug, fix]
+    - title: Documentation
+      labels: [documentation]
+    - title: Other changes
+      labels: ["*"]

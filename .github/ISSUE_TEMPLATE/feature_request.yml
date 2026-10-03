@@ -1,0 +1,22 @@
+name: Feature request
+description: Suggest an idea for SerialScope
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like SerialScope to do?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would it be useful?
+      description: What are you working on, and how would this help?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Anything you've tried instead?
+      description: Other tools or workarounds you use today.

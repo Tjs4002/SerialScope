@@ -1,81 +1,105 @@
 <p align="center">
-  <img src="docs/icon.png" width="96" alt="SerialScope icon">
-</p>
-
-<h1 align="center">SerialScope</h1>
-
-<p align="center">
-  A clean, lightweight serial monitor for Windows.<br>
-  Built for ESP32, Arduino and any other device that talks over a COM port.
+  <img src="docs/banner.png" alt="SerialScope: serial monitor and live plotter for ESP32, Arduino and more" width="100%">
 </p>
 
 <p align="center">
-  <a href="https://github.com/Tjs4002/SerialScope/releases/latest"><img src="https://img.shields.io/github/v/release/Tjs4002/SerialScope?label=download&color=16a34a" alt="Latest release"></a>
-  <a href="https://github.com/Tjs4002/SerialScope/actions/workflows/build.yml"><img src="https://github.com/Tjs4002/SerialScope/actions/workflows/build.yml/badge.svg" alt="Build status"></a>
-  <img src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078d4" alt="Platform: Windows 10 and 11">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license"></a>
+  <a href="https://github.com/Tjs4002/SerialScope/releases/latest"><img src="https://img.shields.io/github/v/release/Tjs4002/SerialScope?style=flat-square&label=release&color=16a34a" alt="Latest release"></a>
+  <a href="https://github.com/Tjs4002/SerialScope/releases"><img src="https://img.shields.io/github/downloads/Tjs4002/SerialScope/total?style=flat-square&color=16a34a" alt="Downloads"></a>
+  <a href="https://github.com/Tjs4002/SerialScope/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/Tjs4002/SerialScope/build.yml?style=flat-square&label=build" alt="Build status"></a>
+  <img src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078d4?style=flat-square" alt="Platform: Windows 10 and 11">
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/Tjs4002/SerialScope?style=flat-square&color=blue" alt="MIT license"></a>
 </p>
 
 <p align="center">
-  <img src="docs/screenshot-dark.png" alt="SerialScope showing ESP32 boot output in dark mode" width="800">
+  <a href="https://github.com/Tjs4002/SerialScope/releases/latest"><b>Download</b></a>
+  &nbsp;·&nbsp;
+  <a href="#features"><b>Features</b></a>
+  &nbsp;·&nbsp;
+  <a href="#plotter"><b>Plotter</b></a>
+  &nbsp;·&nbsp;
+  <a href="#build-from-source"><b>Build</b></a>
+  &nbsp;·&nbsp;
+  <a href="#faq"><b>FAQ</b></a>
 </p>
 
----
+<br>
 
-## Why SerialScope?
+**SerialScope** is a fast, good-looking serial monitor and plotter for Windows. Open it, pick your board's port and see what it's saying, as text or as live graphs. It's a single 50 KB `.exe`, with nothing to install.
 
-Opening a whole IDE just to read a few lines of serial output is slow, and most standalone terminals look like they're from 1998. SerialScope is a single small `.exe` that opens instantly, shows you what your board is saying, and gets out of the way.
-
-- **No install.** One file, about 50 KB. Download it and run it.
-- **No dependencies.** Uses the .NET Framework that already ships with Windows 10 and 11.
-- **Doesn't reset your board.** Opening the port leaves DTR and RTS low, so ESP32 and Arduino boards keep running and you see output from the moment you connect.
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <h3>⚡ Instant</h3>
+      One small file that opens in a blink. No installer, no runtime to download, no account.
+    </td>
+    <td width="33%" valign="top">
+      <h3>📈 Live plotter</h3>
+      Numbers become scrolling graphs, using the Arduino Serial Plotter format. Zoom, pan, hover and record to CSV.
+    </td>
+    <td width="33%" valign="top">
+      <h3>🔌 Board friendly</h3>
+      Connecting doesn't reset your ESP32 or Arduino, and it reconnects by itself after you unplug or reflash.
+    </td>
+  </tr>
+</table>
 
 ## Features
 
-| | |
-|---|---|
-| **Port picker with device names** | Shows `COM3 — Silicon Labs CP210x…` instead of a bare port number, so you can spot your board. The list updates by itself when you plug devices in or out. |
-| **Any baud rate** | All the common rates from 300 to 2,000,000, plus **Custom…** for anything else. |
-| **Auto-reconnect** | Unplug the board, or flash new firmware, and SerialScope reconnects when the port comes back. |
-| **Live plotter** | Turns numeric output into scrolling line graphs, compatible with the Arduino Serial Plotter format. Text output stays visible underneath. |
-| **Zoom and pan** | Zoom time or values with the scroll wheel, drag to scroll back through the last 50,000 readings, right-drag to zoom into an area, hover for exact values. |
-| **Record to CSV** | Record readings while you watch and save them as a CSV file for Excel, Google Sheets or Python. |
-| **Timestamps** | Optional millisecond timestamps on every line. |
-| **Pause display** | Freeze the view to read something. Nothing is lost: incoming data is kept and shown when you resume. |
-| **Send data** | Type into the box at the bottom, with your choice of line ending (none, LF, CR or CR+LF). |
-| **Save log** | Save everything in the window to a `.txt` or `.log` file. |
-| **Dark and light themes** | Including a dark title bar and scroll bars on Windows 10 1809 and later. |
-| **Remembers your setup** | Port, baud rate, theme, options, font size and window size are restored next time. |
+**Connecting**
+- **Port picker with device names:** shows `COM3 — Silicon Labs CP210x…` instead of a bare number, and updates when you plug devices in or out.
+- **Any baud rate:** 300 to 2,000,000 built in, plus **Custom…** for anything else.
+- **Auto-reconnect:** unplug the board or flash new firmware, and SerialScope picks it back up when the port returns.
+- **No surprise resets:** DTR and RTS stay low, so your board keeps running when you connect.
 
-<p align="center">
-  <img src="docs/screenshot-light.png" alt="SerialScope in light mode" width="640">
-</p>
+**Reading**
+- **Live plotter** with zoom, pan, box zoom, hover values and a clickable legend. See [Plotter](#plotter).
+- **Record to CSV** for Excel, Google Sheets or Python.
+- **Timestamps** to the millisecond, **Pause display** without losing data, and **Save log** to a text file.
+- **Send data** back to the board, with a choice of line ending.
+
+**Comfort**
+- **Dark and light themes,** right down to the title bar and scroll bars.
+- **Keyboard shortcuts** and adjustable text size.
+- **Remembers everything:** port, baud rate, theme, view, options and window size.
+
+<table>
+  <tr>
+    <td><img src="docs/screenshot-dark.png" alt="SerialScope in dark mode showing ESP32 boot output"></td>
+    <td><img src="docs/screenshot-light.png" alt="SerialScope in light mode"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Dark theme</sub></td>
+    <td align="center"><sub>Light theme</sub></td>
+  </tr>
+</table>
 
 ## Download
 
-1. Go to the [**latest release**](https://github.com/Tjs4002/SerialScope/releases/latest).
+1. Open the [**latest release**](https://github.com/Tjs4002/SerialScope/releases/latest).
 2. Download **`SerialScope.exe`**.
-3. Double-click it. That's it.
+3. Run it. That's all.
 
-> **"Windows protected your PC"?** The app isn't code-signed (a signing certificate costs hundreds of dollars a year), so Windows SmartScreen may warn you the first time. Click **More info → Run anyway**. If you'd rather not trust a downloaded binary, [build it yourself](#build-from-source) from the source in this repository. It takes a few seconds.
+> [!NOTE]
+> **"Windows protected your PC"?** SerialScope isn't code-signed yet, so SmartScreen may warn you the first time. Click **More info → Run anyway**. Prefer not to trust a downloaded binary? [Build it yourself](#build-from-source) in a few seconds; every release is also built publicly by [GitHub Actions](https://github.com/Tjs4002/SerialScope/actions).
 
-**Requirements:** Windows 10 or 11 (Windows 7/8.1 with .NET Framework 4.5 or later should also work).
+**Requirements:** Windows 10 or 11. Windows 7 and 8.1 with .NET Framework 4.5 or later should also work.
 
-## Usage
+## Quick start
 
-1. Plug in your board and pick its **Port**.
-2. Choose the **Baud** rate your code uses, e.g. `115200` for `Serial.begin(115200)`.
-3. Click **Connect**.
+1. Plug in your board and choose its **Port**.
+2. Pick the **Baud** rate from your code, e.g. `115200` for `Serial.begin(115200)`.
+3. Click **Connect**, or press <kbd>F5</kbd>.
 
-> **Uploading new firmware?** Only one program can use a COM port at a time. Click **Disconnect** before uploading from the Arduino IDE, PlatformIO or esptool, or leave **Auto-reconnect** on, disconnect, upload, and reconnect afterwards.
+> [!TIP]
+> Only one program can use a COM port at a time. Click **Disconnect** before uploading from the Arduino IDE, PlatformIO or esptool, then connect again afterwards.
 
-### Plotter
+## Plotter
 
 <p align="center">
-  <img src="docs/screenshot-plotter.png" alt="SerialScope plotter showing three live waveforms with the text output below" width="800">
+  <img src="docs/screenshot-plotter.png" alt="SerialScope plotter showing three live waveforms with the text output below" width="820">
 </p>
 
-Click **Plotter** (or press <kbd>Ctrl</kbd> + <kbd>2</kbd>) to see your data as a live graph. Want to try it right away? Flash [`examples/PlotterDemo`](examples/PlotterDemo/PlotterDemo.ino) to any Arduino-compatible board. Print one reading per line, in the same format as the Arduino Serial Plotter:
+Click **Plotter** (or press <kbd>Ctrl</kbd> + <kbd>2</kbd>). Print one reading per line, in the same format as the Arduino Serial Plotter:
 
 ```cpp
 Serial.println(analogRead(A0));                 // one line on the graph
@@ -83,20 +107,22 @@ Serial.printf("%d %d %d\n", x, y, z);           // three lines: Value 1, Value 2
 Serial.printf("temp:%.1f,hum:%.1f\n", t, h);    // named lines: temp and hum
 ```
 
-Values can be separated by spaces, commas or tabs. Lines that aren't numbers (log messages and so on) are skipped by the graph but still appear in the text panel below it.
+Values can be separated by spaces, commas or tabs. Text lines such as log messages are left out of the graph but still show in the text panel underneath it.
+
+Want to try it now? Flash [`examples/PlotterDemo`](examples/PlotterDemo/PlotterDemo.ino) to any Arduino-compatible board.
 
 | Action | How |
 |---|---|
 | Zoom time | Scroll wheel, or the **−** / **+** buttons |
 | Zoom values | <kbd>Ctrl</kbd> + scroll wheel |
-| Scroll back | Drag left/right, then **Live ▸** to jump back to the newest data |
-| Zoom to an area | Right-drag a box |
-| Back to auto-fit | Double-click, or **Fit** |
+| Scroll back through history | Drag sideways, then **Live ▸** to return to the newest data |
+| Zoom into an area | Right-drag a box |
+| Fit everything | Double-click, or **Fit** |
 | Exact values | Hover over the graph |
-| Hide/show a line | Click its name in the legend |
-| Record | **● Record**, then **■ Stop** to save a CSV file |
+| Hide or show a line | Click its name in the legend |
+| Record to CSV | **● Record**, then **■ Stop** to save |
 
-### Keyboard shortcuts
+## Keyboard shortcuts
 
 | Shortcut | Action |
 |---|---|
@@ -105,11 +131,11 @@ Values can be separated by spaces, commas or tabs. Lines that aren't numbers (lo
 | <kbd>Ctrl</kbd> + <kbd>L</kbd> | Clear output and graph |
 | <kbd>Ctrl</kbd> + <kbd>S</kbd> | Save log |
 | <kbd>Ctrl</kbd> + <kbd>+</kbd> / <kbd>−</kbd> / <kbd>0</kbd> | Bigger / smaller / default text size |
-| <kbd>Enter</kbd> (in the send box) | Send |
+| <kbd>Enter</kbd> in the send box | Send |
 
 ## Build from source
 
-No Visual Studio needed. The C# compiler is already part of Windows.
+No Visual Studio or SDK needed: the C# compiler already ships with Windows.
 
 ```bat
 git clone https://github.com/Tjs4002/SerialScope.git
@@ -120,7 +146,7 @@ build.bat
 The app is written to `bin\SerialScope.exe`.
 
 <details>
-<summary>Project layout</summary>
+<summary><b>Project layout</b></summary>
 
 ```
 SerialScope/
@@ -139,16 +165,50 @@ SerialScope/
 │   ├── app.ico            Application icon
 │   └── app.manifest       DPI awareness and modern Windows controls
 ├── examples/PlotterDemo   Arduino sketch that prints test waveforms
-├── tools/make-icon.ps1    Regenerates app.ico
+├── tools/                 Icon and banner generators
 ├── docs/                  Screenshots and README images
 └── build.bat              One-step build
 ```
 </details>
 
+## FAQ
+
+<details>
+<summary><b>It says the port is busy or in use.</b></summary>
+
+Another program has the port open: usually the Arduino IDE's Serial Monitor, an upload in progress, or a second copy of SerialScope. Close it and click **Connect** again.
+</details>
+
+<details>
+<summary><b>I only see garbage characters.</b></summary>
+
+The baud rate doesn't match your code. Pick the same number you used in `Serial.begin(...)`. ESP32 boot messages use 115200.
+</details>
+
+<details>
+<summary><b>My board doesn't appear in the port list.</b></summary>
+
+Try a different USB cable (many are charge-only), then install the driver for your board's USB chip. That's usually the **CP210x** (Silicon Labs) or **CH340** (WCH); the chip name is printed on the board next to the USB port.
+</details>
+
+<details>
+<summary><b>The plotter says "Waiting for numbers".</b></summary>
+
+Each line must contain only numbers, optionally with names, like `23.5`, `1 2 3` or `temp:23.5,hum:41`. Lines with other text are shown in the text panel but not plotted.
+</details>
+
+<details>
+<summary><b>Does it work on macOS or Linux?</b></summary>
+
+Not yet. SerialScope uses Windows' built-in tools to stay tiny and install-free. A cross-platform version may come later; [open an issue](https://github.com/Tjs4002/SerialScope/issues) if you'd use it.
+</details>
+
 ## Contributing
 
-Bug reports and ideas are welcome. Please [open an issue](https://github.com/Tjs4002/SerialScope/issues). See [CONTRIBUTING.md](CONTRIBUTING.md) if you'd like to send a pull request.
+Bug reports, ideas and pull requests are welcome. Start with an [issue](https://github.com/Tjs4002/SerialScope/issues/new/choose), and see [CONTRIBUTING.md](CONTRIBUTING.md) for how to build and submit changes.
+
+If SerialScope saves you time, a ⭐ on the repo helps other people find it.
 
 ## License
 
-[MIT](LICENSE) © 2026 Tejas
+Released under the [MIT License](LICENSE). © 2026 Tejas

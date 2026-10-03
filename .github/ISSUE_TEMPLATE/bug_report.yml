@@ -1,0 +1,58 @@
+name: Bug report
+description: Something isn't working as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to report this. The more detail you give, the faster it can be fixed.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the problem, and what you expected to happen instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Connect to COM3 at 115200
+        2. Switch to Plotter
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: SerialScope version
+      description: Shown in the About dialog (the ⓘ button).
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: windows
+    attributes:
+      label: Windows version
+      options:
+        - Windows 11
+        - Windows 10
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and USB chip
+      description: Your board, and the chip name shown next to the port (e.g. CP210x, CH340).
+      placeholder: "ESP32 DevKit, CP210x"
+  - type: input
+    id: baud
+    attributes:
+      label: Baud rate
+      placeholder: "115200"
+  - type: textarea
+    id: log
+    attributes:
+      label: Log or screenshot
+      description: Use **Save log** and attach the file, or paste the relevant lines. You can also drag a screenshot in here.
