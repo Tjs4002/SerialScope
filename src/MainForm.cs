@@ -34,6 +34,8 @@ namespace SerialScope
         private readonly FlatComboBox baudBox = new FlatComboBox();
         private readonly FlatButton refreshButton = new FlatButton("", ButtonKind.Icon);
         private readonly FlatButton connectButton = new FlatButton("Connect", ButtonKind.Success);
+        private readonly FlatButton frameButton = new FlatButton("8N1", ButtonKind.Normal);
+        private PortConfig portConfig = new PortConfig();
         private readonly FlatButton clearButton = new FlatButton("", ButtonKind.Icon);
         private readonly FlatButton saveButton = new FlatButton("", ButtonKind.Icon);
         private readonly FlatButton settingsButton = new FlatButton("", ButtonKind.Icon);
@@ -145,7 +147,33 @@ namespace SerialScope
         private int hexCount;
         private long hexOffset;
         private readonly StringBuilder hexAscii = new StringBuilder();
+        private readonly StringBuilder hexBody = new StringBuilder();
+        private string hexPrefix = "";
+        private string currentPrefix = "";   // timestamp of the line being received
         private int outputVersion;
+
+        // Recent complete lines, so the output can be redrawn when the filter, rules or theme change
+        private enum LineRole { Text, System, Hex }
+
+        private sealed class StoredLine
+        {
+            public LineRole Role;
+            public string Prefix;   // timestamp or hex offset, drawn muted
+            public string Body;
+            public string Suffix;   // hex view's printable characters
+        }
+
+        private readonly List<StoredLine> history = new List<StoredLine>();
+        private const int MaxHistoryLines = 100000;
+        private const int MaxLineLength = 8192;
+        private bool rendering;   // redrawing from history: nothing new is logged or stored
+
+        // Highlight rules and filter
+        private List<HighlightRule> rules = new List<HighlightRule>();
+        private readonly ToolStripMenuItem rulesItem = new ToolStripMenuItem("Highlight rules…");
+        private readonly FlatComboBox filterBox = new FlatComboBox();
+        private readonly System.Windows.Forms.Timer filterTimer = new System.Windows.Forms.Timer { Interval = 300 };
+        private int filterMode;   // 0 = all lines, 1 = only matching, 2 = hide matching
 
         // Plotter and recording
         private readonly StringBuilder plotLine = new StringBuilder();
@@ -215,6 +243,11 @@ namespace SerialScope
             baudBox.Items.Add(CustomBaudItem);
             baudBox.SelectedIndexChanged += delegate { OnBaudSelected(); };
             connection.Controls.Add(baudBox);
+            frameButton.MinimumSize = new Size(52, 30);
+            frameButton.Margin = new Padding(0, 0, 10, 0);
+            frameButton.Click += delegate { EditPortSettings(); };
+            tips.SetToolTip(frameButton, "Port settings: data bits, parity, stop bits, flow control, DTR/RTS");
+            connection.Controls.Add(frameButton);
             connectButton.MinimumSize = new Size(100, 30);
             connectButton.Click += delegate { ToggleConnection(); };
             tips.SetToolTip(connectButton, "Connect / disconnect (F5)");
@@ -391,7 +424,14 @@ namespace SerialScope
             reconnectItem.CheckedChanged += delegate { autoReconnect = reconnectItem.Checked; };
             highlightItem.CheckOnClick = true;
             highlightItem.ToolTipText = "Show error lines in red, warnings in amber and debug lines dimmed";
-            highlightItem.CheckedChanged += delegate { highlight = highlightItem.Checked; };
+            highlightItem.CheckedChanged += delegate
+            {
+                if (highlight == highlightItem.Checked) return;
+                highlight = highlightItem.Checked;
+                Rerender();
+            };
+            rulesItem.ToolTipText = "Colour lines that contain your own words or patterns";
+            rulesItem.Click += delegate { EditHighlightRules(); };
             updateStartupItem.CheckOnClick = true;
             updateStartupItem.ToolTipText = "Ask GitHub for a newer version at most twice a day";
             updateNowItem.Click += delegate { CheckForUpdates(true); };
@@ -409,6 +449,7 @@ namespace SerialScope
             };
             settingsMenu.Items.Add(reconnectItem);
             settingsMenu.Items.Add(highlightItem);
+            settingsMenu.Items.Add(rulesItem);
             settingsMenu.Items.Add(new ToolStripSeparator());
             settingsMenu.Items.Add(sessionLogItem);
             settingsMenu.Items.Add(openLogsItem);
@@ -446,7 +487,11 @@ namespace SerialScope
             findBox.BorderStyle = BorderStyle.None;
             findBox.Dock = DockStyle.Fill;
             NativeMethods.SetPlaceholder(findBox, "Find in output");
-            findBox.TextChanged += delegate { RunSearch(true); };
+            findBox.TextChanged += delegate
+            {
+                RunSearch(true);
+                if (filterMode != 0) { filterTimer.Stop(); filterTimer.Start(); }   // re-filter once typing pauses
+            };
             findBox.KeyDown += delegate(object s, KeyEventArgs e)
             {
                 if (e.KeyCode == Keys.Enter) { NextMatch(!e.Shift); e.SuppressKeyPress = true; }
@@ -472,8 +517,24 @@ namespace SerialScope
             findCaseBox.Text = "Match case";
             findCaseBox.AutoSize = true;
             findCaseBox.Margin = new Padding(0, 6, 14, 0);
-            findCaseBox.CheckedChanged += delegate { RunSearch(true); };
+            findCaseBox.CheckedChanged += delegate { RunSearch(true); if (filterMode != 0) Rerender(); };
             row.Controls.Add(findCaseBox);
+
+            row.Controls.Add(new Label { Text = "Show", AutoSize = true, Margin = new Padding(0, 7, 6, 0), Tag = "muted" });
+            filterBox.Items.AddRange(new object[] { "All lines", "Only matching", "Hide matching" });
+            filterBox.SelectedIndex = 0;
+            filterBox.Width = 130;
+            filterBox.Margin = new Padding(0, 3, 14, 0);
+            tips.SetToolTip(filterBox, "Filter the output to lines that contain (or don't contain) the search text");
+            filterBox.SelectedIndexChanged += delegate
+            {
+                if (filterBox.SelectedIndex == filterMode) return;
+                filterMode = Math.Max(0, filterBox.SelectedIndex);
+                Rerender();
+                RunSearch(false);
+            };
+            row.Controls.Add(filterBox);
+            filterTimer.Tick += delegate { filterTimer.Stop(); Rerender(); RunSearch(false); };
 
             var close = new FlatButton("", ButtonKind.Icon);
             close.Click += delegate { HideFindBar(); };
@@ -547,14 +608,19 @@ namespace SerialScope
         private void LoadPreferences()
         {
             SelectBaud(settings.GetInt("baud", 115200));
+            portConfig = PortConfig.Parse(settings.Get("portConfig", ""));
+            frameButton.Text = portConfig.Summary;
             timestampBox.Checked = settings.GetBool("timestamps", false);
             autoScrollBox.Checked = settings.GetBool("autoscroll", true);
             reconnectItem.Checked = settings.GetBool("reconnect", true);
             highlightItem.Checked = settings.GetBool("highlight", true);
+            autoReconnect = reconnectItem.Checked;   // the menu items start unchecked, so set these directly too
+            highlight = highlightItem.Checked;
             hexBox.Checked = settings.GetBool("hex", false);
             updateStartupItem.Checked = settings.GetBool("checkUpdates", true);
             sessionLogItem.Checked = settings.GetBool("sessionLog", false);
             sendHistory.AddRange(SplitList(settings.Get("history", "")));
+            rules = HighlightRule.Parse(settings.Get("rules", ""));
             savedCommands.AddRange(SplitList(settings.Get("commands", "")));
             lineEndingBox.SelectedIndex = Math.Max(0, Math.Min(3, settings.GetInt("lineEnding", 1)));
             SetOutputFont(settings.GetInt("fontSize", (int)DefaultFontSize));
@@ -569,6 +635,7 @@ namespace SerialScope
         private void SavePreferences()
         {
             settings.Set("baud", SelectedBaud());
+            settings.Set("portConfig", portConfig.Serialize());
             settings.Set("timestamps", timestampBox.Checked);
             settings.Set("autoscroll", autoScrollBox.Checked);
             settings.Set("reconnect", autoReconnect);
@@ -576,6 +643,7 @@ namespace SerialScope
             settings.Set("hex", hexMode);
             settings.Set("checkUpdates", updateStartupItem.Checked);
             settings.Set("sessionLog", sessionLogItem.Checked);
+            settings.Set("rules", HighlightRule.Serialize(rules));
             settings.Set("history", string.Join(ListSeparator.ToString(), sendHistory.ToArray()));
             settings.Set("commands", string.Join(ListSeparator.ToString(), savedCommands.ToArray()));
             settings.Set("lineEnding", lineEndingBox.SelectedIndex);
@@ -612,6 +680,8 @@ namespace SerialScope
             plotSplit.BackColor = t.Border;   // the divider
             plotSplit.Panel1.BackColor = t.OutputBack;
             plotSplit.Panel2.BackColor = t.OutputBack;
+            if (history.Count > 0 || !atLineStart) Rerender();   // recolour existing output in the new theme
+            if (findBar.Visible) RunSearch(false);
             Invalidate(true);
         }
 
@@ -700,6 +770,37 @@ namespace SerialScope
             }
         }
 
+        private void EditPortSettings()
+        {
+            using (var dialog = new PortSettingsForm(theme, portConfig))
+            {
+                if (dialog.ShowDialog(this) != DialogResult.OK) return;
+                portConfig = dialog.Result;
+            }
+            frameButton.Text = portConfig.Summary;
+            if (port != null)
+            {
+                try
+                {
+                    portConfig.ApplyTo(port);
+                    WriteSystemLine("Port settings: " + PortSettingsText());
+                }
+                catch (Exception ex)
+                {
+                    WriteSystemLine("Couldn't apply port settings: " + ex.Message);
+                }
+            }
+            UpdateStatusText();
+        }
+
+        // e.g. "8N1, no flow control, DTR off, RTS off"
+        private string PortSettingsText()
+        {
+            string flow = portConfig.Handshake == Handshake.None ? "no flow control" : "flow control " + PortConfig.HandshakeText(portConfig.Handshake);
+            string rts = portConfig.UsesRtsForFlowControl ? "RTS automatic" : "RTS " + (portConfig.Rts ? "on" : "off");
+            return portConfig.Summary + ", " + flow + ", DTR " + (portConfig.Dtr ? "on" : "off") + ", " + rts;
+        }
+
         private string SelectedPortName()
         {
             var item = portBox.SelectedItem as PortInfo;
@@ -777,14 +878,9 @@ namespace SerialScope
 
         private bool OpenPort(string name, int baud, bool showErrors)
         {
-            var sp = new SerialPort(name, baud, Parity.None, 8, StopBits.One)
-            {
-                // Both control lines low, so opening the port does not reset boards with auto-reset circuits
-                DtrEnable = false,
-                RtsEnable = false,
-                ReadTimeout = 500,
-                WriteTimeout = 1000
-            };
+            var sp = new SerialPort(name, baud) { ReadTimeout = 500, WriteTimeout = 1000 };
+            // Framing and control lines; by default DTR and RTS stay low, so boards with auto-reset circuits keep running
+            portConfig.ApplyTo(sp);
             sp.DataReceived += OnDataReceived;
             sp.ErrorReceived += delegate { portLost = true; };
 
@@ -1039,12 +1135,16 @@ namespace SerialScope
                 else FormatText(text);
             }
 
-            // Show the unfinished end of the current line now; it is coloured when the line completes
+            // Show the unfinished end of the current line now; it is coloured when the line completes.
+            // While filtering, lines only appear once complete (they may not match).
             if (lineText.Length > 0)
             {
-                Emit(lineText.ToString(), output.TextColor);
+                if (filterMode == 0)
+                {
+                    Emit(lineText.ToString(), output.TextColor);
+                    lineHasEarlierPart = true;
+                }
                 lineText.Length = 0;
-                lineHasEarlierPart = true;
             }
             FlushPending();
             TrimOutput();
@@ -1059,7 +1159,8 @@ namespace SerialScope
                 if (c == '\r' || c == '\0') continue;
                 if (atLineStart)
                 {
-                    if (timestampBox.Checked) Emit(DateTime.Now.ToString("HH:mm:ss.fff") + "   ", output.MutedColor);
+                    currentPrefix = timestampBox.Checked ? DateTime.Now.ToString("HH:mm:ss.fff") + "   " : "";
+                    if (filterMode == 0) Emit(currentPrefix, output.MutedColor);
                     lineContentStart = output.TextLength + pending.Length;
                     lineHasEarlierPart = false;
                     rawLine.Length = 0;
@@ -1068,20 +1169,29 @@ namespace SerialScope
 
                 if (c == '\n')
                 {
-                    lineText.Append('\n');
-                    LineKind kind = highlight ? LogHighlighter.Classify(rawLine.ToString()) : LineKind.Normal;
-                    if (!lineHasEarlierPart)
+                    string body = rawLine.ToString();
+                    Remember(LineRole.Text, currentPrefix, body, null);
+                    Color color = LineColor(body);
+                    if (filterMode != 0)
                     {
-                        Emit(lineText.ToString(), output.ColorFor(kind));
+                        if (PassesFilter(body))
+                        {
+                            Emit(currentPrefix, output.MutedColor);
+                            Emit(body + "\n", color);
+                        }
+                    }
+                    else if (!lineHasEarlierPart)
+                    {
+                        Emit(lineText.Append('\n').ToString(), color);
                     }
                     else
                     {
                         // Part of this line is already on screen: add the rest, then colour the whole line
-                        Emit(lineText.ToString(), output.TextColor);
-                        if (kind != LineKind.Normal)
+                        Emit(lineText.Append('\n').ToString(), output.TextColor);
+                        if (color != output.TextColor)
                         {
                             FlushPending();
-                            output.ColorRange(lineContentStart, output.TextLength - lineContentStart, output.ColorFor(kind));
+                            output.ColorRange(lineContentStart, output.TextLength - lineContentStart, color);
                         }
                     }
                     lineText.Length = 0;
@@ -1090,7 +1200,7 @@ namespace SerialScope
                 else
                 {
                     lineText.Append(c);
-                    if (rawLine.Length < 4096) rawLine.Append(c);
+                    if (rawLine.Length < MaxLineLength) rawLine.Append(c);
                 }
             }
         }
@@ -1102,10 +1212,13 @@ namespace SerialScope
             {
                 if (hexCount == 0)
                 {
-                    string prefix = timestampBox.Checked ? DateTime.Now.ToString("HH:mm:ss.fff") : hexOffset.ToString("X8");
-                    Emit(prefix + "   ", output.MutedColor);
+                    hexPrefix = (timestampBox.Checked ? DateTime.Now.ToString("HH:mm:ss.fff") : hexOffset.ToString("X8")) + "   ";
+                    hexBody.Length = 0;
+                    Emit(hexPrefix, output.MutedColor);
                 }
-                Emit(b.ToString("X2") + (hexCount == 7 ? "  " : " "), output.TextColor);
+                string cell = b.ToString("X2") + (hexCount == 7 ? "  " : " ");
+                hexBody.Append(cell);
+                Emit(cell, output.TextColor);
                 hexAscii.Append(b >= 32 && b < 127 ? (char)b : '.');
                 hexCount++;
                 hexOffset++;
@@ -1117,15 +1230,19 @@ namespace SerialScope
         {
             if (hexCount == 0) return;
             int missing = 16 - hexCount;
-            string pad = new string(' ', missing * 3 + (hexCount <= 7 ? 1 : 0));
-            Emit(pad + "  " + hexAscii + "\n", output.MutedColor);
+            string suffix = new string(' ', missing * 3 + (hexCount <= 7 ? 1 : 0)) + "  " + hexAscii;
+            Emit(suffix + "\n", output.MutedColor);
+            Remember(LineRole.Hex, hexPrefix, hexBody.ToString(), suffix);
             hexAscii.Length = 0;
+            hexBody.Length = 0;
             hexCount = 0;
         }
 
         private void SetHexMode(bool on)
         {
             if (on == hexMode) return;
+            if (on && filterMode != 0) filterBox.SelectedIndex = 0;   // the filter works on text lines only
+            filterBox.Enabled = !on;
             DrainIncoming();
             output.BeginAppend(FollowOutput);
             if (on) EndTextLine();
@@ -1140,10 +1257,109 @@ namespace SerialScope
         private void EndTextLine()
         {
             if (atLineStart && lineText.Length == 0) return;
-            Emit(lineText.ToString() + "\n", output.TextColor);
+            string body = rawLine.ToString();
+            Remember(LineRole.Text, currentPrefix, body, null);
+            if (filterMode == 0) Emit(lineText.ToString() + "\n", output.TextColor);
+            else if (PassesFilter(body)) { Emit(currentPrefix, output.MutedColor); Emit(body + "\n", LineColor(body)); }
             lineText.Length = 0;
             rawLine.Length = 0;
             atLineStart = true;
+        }
+
+        // ------------------------------------------------------------------ history, rules, filter
+
+        private void EditHighlightRules()
+        {
+            using (var dialog = new HighlightRulesForm(theme, rules))
+            {
+                if (dialog.ShowDialog(this) != DialogResult.OK) return;
+                rules = dialog.Rules;
+            }
+            settings.Set("rules", HighlightRule.Serialize(rules));
+            Rerender();
+            if (findBar.Visible) RunSearch(false);
+        }
+
+        private void Remember(LineRole role, string prefix, string body, string suffix)
+        {
+            if (rendering) return;
+            history.Add(new StoredLine { Role = role, Prefix = prefix ?? "", Body = body, Suffix = suffix });
+            if (history.Count > MaxHistoryLines) history.RemoveRange(0, MaxHistoryLines / 10);
+        }
+
+        // Your rules first (in order), then the built-in error/warning/debug colours
+        private Color LineColor(string body)
+        {
+            foreach (HighlightRule rule in rules)
+                if (rule.Matches(body)) return HighlightRule.ColorFor(rule.Color, output.IsDark);
+            return highlight ? output.ColorFor(LogHighlighter.Classify(body)) : output.TextColor;
+        }
+
+        private bool PassesFilter(string body)
+        {
+            string term = findBox.Text;
+            if (filterMode == 0 || term.Length == 0) return true;
+            bool contains = body.IndexOf(term, findCaseBox.Checked ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase) >= 0;
+            return filterMode == 1 ? contains : !contains;
+        }
+
+        // Rebuilds the output from history: used when the filter, rules, highlighting or theme change
+        private void Rerender()
+        {
+            rendering = true;
+            output.Clear();
+            pending.Length = 0;
+            output.BeginAppend(FollowOutput);
+
+            // Newest lines that fit in the output
+            int start = history.Count, chars = 0;
+            while (start > 0 && chars < TrimToChars)
+            {
+                start--;
+                StoredLine l = history[start];
+                chars += l.Prefix.Length + l.Body.Length + (l.Suffix == null ? 0 : l.Suffix.Length) + 1;
+            }
+            for (int i = start; i < history.Count; i++)
+            {
+                StoredLine l = history[i];
+                switch (l.Role)
+                {
+                    case LineRole.System:
+                        Emit(l.Body + "\n", output.MutedColor);
+                        break;
+                    case LineRole.Hex:
+                        Emit(l.Prefix, output.MutedColor);
+                        Emit(l.Body, output.TextColor);
+                        Emit(l.Suffix + "\n", output.MutedColor);
+                        break;
+                    default:
+                        if (!PassesFilter(l.Body)) break;
+                        Emit(l.Prefix, output.MutedColor);
+                        Emit(l.Body + "\n", LineColor(l.Body));
+                        break;
+                }
+            }
+
+            // The line still being received
+            if (hexMode && hexCount > 0)
+            {
+                Emit(hexPrefix, output.MutedColor);
+                Emit(hexBody.ToString(), output.TextColor);
+            }
+            else if (!hexMode && !atLineStart && filterMode == 0)
+            {
+                Emit(currentPrefix, output.MutedColor);
+                lineContentStart = output.TextLength + pending.Length;
+                Emit(rawLine.ToString(), output.TextColor);
+                lineHasEarlierPart = true;
+            }
+            lineText.Length = 0;
+
+            FlushPending();
+            output.EndAppend();
+            if (FollowOutput) output.ScrollToEnd();
+            rendering = false;
+            outputVersion++;
         }
 
         // Queues text in a colour; consecutive text in the same colour is appended in one go
@@ -1162,7 +1378,7 @@ namespace SerialScope
             output.Append(text, pendingColor);
             pending.Length = 0;
             outputVersion++;
-            if (sessionLog != null) WriteSessionLog(text);
+            if (sessionLog != null && !rendering) WriteSessionLog(text);
         }
 
         // ------------------------------------------------------------------ portable mode
@@ -1248,7 +1464,9 @@ namespace SerialScope
             output.BeginAppend(FollowOutput);
             if (hexMode) EndHexLine();
             else EndTextLine();
-            Emit("—— " + message + " ——\n", output.MutedColor);
+            string line = "—— " + message + " ——";
+            Remember(LineRole.System, "", line, null);
+            Emit(line + "\n", output.MutedColor);
             FlushPending();
             TrimOutput();
             output.EndAppend();
@@ -1266,6 +1484,8 @@ namespace SerialScope
             lineContentStart = 0;
             hexCount = 0;
             hexAscii.Length = 0;
+            hexBody.Length = 0;
+            history.Clear();
             outputVersion++;
             plot.Clear();
             plotLine.Length = 0;
@@ -1307,6 +1527,7 @@ namespace SerialScope
         private void HideFindBar()
         {
             findBar.Visible = false;
+            if (filterMode != 0) filterBox.SelectedIndex = 0;   // closing the bar shows all lines again
             output.ClearHighlights();
             findMatches.Clear();
             findIndex = -1;
@@ -1343,6 +1564,7 @@ namespace SerialScope
         {
             if (findBox.Text.Length == 0) findCount.Text = "";
             else if (findMatches.Count == 0) findCount.Text = "No matches";
+            else if (findIndex < 0) findCount.Text = findMatches.Count + (findMatches.Count == 1 ? " match" : " matches") + (findMatches.Count >= MaxSearchMatches ? "+" : "");
             else findCount.Text = (findIndex + 1) + " of " + findMatches.Count + (findMatches.Count >= MaxSearchMatches ? "+" : "");
         }
 
@@ -1584,7 +1806,9 @@ namespace SerialScope
         private void UpdateStatusText()
         {
             if (port != null)
-                statusLabel.Text = "Connected to " + port.PortName + " at " + port.BaudRate + " baud" + (pauseBox.Checked ? "  (display paused)" : "");
+                statusLabel.Text = "Connected to " + port.PortName + " at " + port.BaudRate + " baud" +
+                                   (portConfig.IsDefault ? "" : ", " + portConfig.Summary + (portConfig.Handshake != Handshake.None ? ", flow control" : "")) +
+                                   (pauseBox.Checked ? "  (display paused)" : "");
             else if (reconnectPort != null)
                 statusLabel.Text = "Waiting for " + reconnectPort + " to come back…";
             else if (portBox.Items.Count == 0)

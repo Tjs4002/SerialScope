@@ -242,6 +242,81 @@ namespace SerialScope.Tests
         }
     }
 
+    internal static class PortConfigTests
+    {
+        [Test] public static void DefaultsAre8N1WithLinesOff()
+        {
+            var c = new PortConfig();
+            Assert.Equal("8N1", c.Summary, "summary");
+            Assert.True(c.IsDefault && !c.Dtr && !c.Rts, "default has DTR and RTS off");
+            Assert.Equal("8N1", PortConfig.Parse("").Summary, "empty setting gives defaults");
+        }
+
+        [Test] public static void SaveAndLoad()
+        {
+            var c = new PortConfig
+            {
+                DataBits = 7,
+                Parity = System.IO.Ports.Parity.Even,
+                StopBits = System.IO.Ports.StopBits.Two,
+                Handshake = System.IO.Ports.Handshake.RequestToSend,
+                Dtr = true
+            };
+            Assert.Equal("7E2", c.Summary, "summary");
+            var back = PortConfig.Parse(c.Serialize());
+            Assert.Equal("7E2", back.Summary, "framing survives");
+            Assert.Equal(System.IO.Ports.Handshake.RequestToSend, back.Handshake, "flow control survives");
+            Assert.True(back.Dtr && !back.Rts, "control lines survive");
+            Assert.True(back.UsesRtsForFlowControl, "RTS owned by flow control");
+            Assert.True(!back.IsDefault, "not default");
+        }
+
+        [Test] public static void OddValues()
+        {
+            Assert.Equal("8N1.5", PortConfig.Parse("8N1.5").Summary, "1.5 stop bits");
+            Assert.Equal("5M1", PortConfig.Parse("5m1").Summary, "lower case, mark parity");
+            Assert.Equal("8N1", PortConfig.Parse("garbage").Summary, "garbage falls back to defaults");
+        }
+    }
+
+    internal static class HighlightRuleTests
+    {
+        [Test] public static void PlainTextMatching()
+        {
+            var r = new HighlightRule { Pattern = "temp" };
+            Assert.True(r.Matches("TEMP: 23.5"), "case-insensitive by default");
+            r.MatchCase = true;
+            Assert.True(!r.Matches("TEMP: 23.5"), "match case respected");
+            r.Enabled = false;
+            Assert.True(!r.Matches("temp"), "disabled rules never match");
+        }
+
+        [Test] public static void RegexMatching()
+        {
+            var r = new HighlightRule { Pattern = @"RSSI -(8|9)\d", IsRegex = true };
+            Assert.True(r.Matches("wifi: RSSI -87 dBm"), "regex match");
+            Assert.True(!r.Matches("wifi: RSSI -62 dBm"), "regex no match");
+            string error;
+            Assert.True(!new HighlightRule { Pattern = "(unclosed", IsRegex = true }.IsValid(out error) && error != null, "bad regex reported");
+            Assert.True(!new HighlightRule { Pattern = "(unclosed", IsRegex = true }.Matches("(unclosed"), "bad regex never matches");
+        }
+
+        [Test] public static void SaveAndLoad()
+        {
+            var rules = new List<HighlightRule>
+            {
+                new HighlightRule { Pattern = "OK", Color = 3 },
+                new HighlightRule { Pattern = @"^\[W\]", IsRegex = true, MatchCase = true, Color = 1, Enabled = false }
+            };
+            var back = HighlightRule.Parse(HighlightRule.Serialize(rules));
+            Assert.Equal(2, back.Count, "count");
+            Assert.Equal("OK", back[0].Pattern, "first pattern");
+            Assert.Equal(3, back[0].Color, "first colour");
+            Assert.True(back[1].IsRegex && back[1].MatchCase && !back[1].Enabled, "second flags");
+            Assert.Equal(0, HighlightRule.Parse("").Count, "empty");
+        }
+    }
+
     internal static class SettingsTests
     {
         [Test] public static void RoundTripAndMerge()

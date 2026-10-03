@@ -72,70 +72,22 @@ namespace SerialScope
             ApplyTheme(Theme.Dark);
         }
 
+        // Sets the colours used for new text. Existing text is recoloured by the owner redrawing it.
         public void ApplyTheme(Theme t)
         {
-            Theme old = theme;
             theme = t;
-            Color newText = t.OutputText, newMuted = t.Muted;
-            Color newError = t.IsDark ? Color.FromArgb(248, 113, 113) : Color.FromArgb(220, 38, 38);
-            Color newWarning = t.IsDark ? Color.FromArgb(251, 191, 36) : Color.FromArgb(180, 83, 9);
-
-            if (old != null && old != t && TextLength > 0)
-            {
-                // Swap the colours of existing text in one go by rewriting the RTF colour table
-                ClearHighlights();
-                string rtf = Rtf;
-                var pairs = new[]
-                {
-                    new KeyValuePair<Color, Color>(TextColor, newText),
-                    new KeyValuePair<Color, Color>(MutedColor, newMuted),
-                    new KeyValuePair<Color, Color>(ErrorColor, newError),
-                    new KeyValuePair<Color, Color>(WarningColor, newWarning),
-                    new KeyValuePair<Color, Color>(old.OutputBack, t.OutputBack)
-                };
-                for (int i = 0; i < pairs.Length; i++) rtf = rtf.Replace(RtfColor(pairs[i].Key), "\\red" + (900 + i) + "\\green0\\blue0;");
-                for (int i = 0; i < pairs.Length; i++) rtf = rtf.Replace("\\red" + (900 + i) + "\\green0\\blue0;", RtfColor(pairs[i].Value));
-                rtf = UnicodeSpecialChars(rtf);
-                // Default colours first: setting ForeColor after loading would recolour every line
-                BackColor = t.OutputBack;
-                ForeColor = t.OutputText;
-                Rtf = rtf;
-                if (followEnd) ScrollToEnd();
-            }
-
-            TextColor = newText;
-            MutedColor = newMuted;
-            ErrorColor = newError;
-            WarningColor = newWarning;
+            TextColor = t.OutputText;
+            MutedColor = t.Muted;
+            ErrorColor = t.IsDark ? Color.FromArgb(248, 113, 113) : Color.FromArgb(220, 38, 38);
+            WarningColor = t.IsDark ? Color.FromArgb(251, 191, 36) : Color.FromArgb(180, 83, 9);
             matchBack = t.IsDark ? Color.FromArgb(113, 63, 18) : Color.FromArgb(254, 240, 138);
-            if (TextLength == 0)
-            {
-                BackColor = t.OutputBack;
-                ForeColor = t.OutputText;
-            }
+            BackColor = t.OutputBack;
+            ForeColor = t.OutputText;
         }
 
-        // RichEdit writes some characters as RTF keywords (e.g. \emdash) but reads them back as plain
-        // ASCII look-alikes ("--"), so switch them to explicit Unicode escapes before reloading
-        private static string UnicodeSpecialChars(string rtf)
+        public bool IsDark
         {
-            string[,] map =
-            {
-                { "\\emdash", "\\u8212?" }, { "\\endash", "\\u8211?" }, { "\\bullet", "\\u8226?" },
-                { "\\lquote", "\\u8216?" }, { "\\rquote", "\\u8217?" },
-                { "\\ldblquote", "\\u8220?" }, { "\\rdblquote", "\\u8221?" }
-            };
-            for (int i = 0; i < map.GetLength(0); i++)
-            {
-                // The keyword's trailing space is a delimiter, not text, so it is consumed too
-                rtf = System.Text.RegularExpressions.Regex.Replace(rtf, System.Text.RegularExpressions.Regex.Escape(map[i, 0]) + "(?![a-z]) ?", map[i, 1]);
-            }
-            return rtf;
-        }
-
-        private static string RtfColor(Color c)
-        {
-            return "\\red" + c.R + "\\green" + c.G + "\\blue" + c.B + ";";
+            get { return theme == null || theme.IsDark; }
         }
 
         public Color ColorFor(LineKind kind)
