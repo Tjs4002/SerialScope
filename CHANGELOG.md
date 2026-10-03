@@ -3,7 +3,7 @@
 All notable changes to SerialScope are listed here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
-## [1.1.0] - Unreleased
+## [1.1.0] - 2026-10-04
 
 ### Added
 - **Highlighting:** error lines in red, warnings in amber and debug lines dimmed, recognising ESP-IDF (`E (123) tag:`), Arduino-ESP32 (`[E][file.cpp:12]`) and common words like "error" and "failed". Can be turned off in Settings.
