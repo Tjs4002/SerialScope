@@ -51,8 +51,18 @@ namespace SerialScope
         private StreamWriter sessionLog;
         private string sessionLogPath;
 
-        private static readonly string LogsFolder = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), AppInfo.Name, "Logs");
+        private readonly ToolStripMenuItem portableItem = new ToolStripMenuItem("Portable mode");
+
+        // Next to the exe in portable mode, otherwise Documents\SerialScope\Logs
+        private static string LogsFolder
+        {
+            get
+            {
+                return Settings.PortableMode
+                    ? Path.Combine(Settings.AppFolder, "Logs")
+                    : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), AppInfo.Name, "Logs");
+            }
+        }
 
         // Options row
         private readonly FlatCheckBox timestampBox = new FlatCheckBox();
@@ -143,8 +153,15 @@ namespace SerialScope
         private readonly List<string> parsedNames = new List<string>();
         private readonly List<double> parsedValues = new List<double>();
 
-        public MainForm()
+        private readonly CommandLine startup;
+
+        public MainForm() : this(new CommandLine())
         {
+        }
+
+        public MainForm(CommandLine options)
+        {
+            startup = options;
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             Text = AppInfo.Name;
@@ -158,6 +175,7 @@ namespace SerialScope
             BuildLayout();
             LoadPreferences();
             RefreshPorts();
+            ApplyStartupOptions();
             UpdateUiState();
 
             flushTimer.Interval = 50;
@@ -395,6 +413,11 @@ namespace SerialScope
             settingsMenu.Items.Add(sessionLogItem);
             settingsMenu.Items.Add(openLogsItem);
             settingsMenu.Items.Add(new ToolStripSeparator());
+            portableItem.ToolTipText = "Keep settings and logs next to SerialScope.exe, for running from a USB stick";
+            portableItem.Checked = Settings.PortableMode;
+            portableItem.Click += delegate { TogglePortableMode(); };
+            settingsMenu.Items.Add(portableItem);
+            settingsMenu.Items.Add(new ToolStripSeparator());
             settingsMenu.Items.Add(updateStartupItem);
             settingsMenu.Items.Add(updateNowItem);
             settingsMenu.ShowItemToolTips = true;
@@ -486,6 +509,37 @@ namespace SerialScope
                 Margin = new Padding(0, 7, 6, 0),
                 Tag = muted ? "muted" : null
             };
+        }
+
+        // ------------------------------------------------------------------ command line
+
+        // Options given on the command line override the saved preferences for this session
+        private void ApplyStartupOptions()
+        {
+            if (startup.Theme != null) SetTheme(Theme.FromName(startup.Theme));
+            if (startup.Baud > 0) SelectBaud(startup.Baud);
+            if (startup.Plot) SetView(true);
+            if (startup.Text) SetView(false);
+            if (startup.Hex) hexBox.Checked = true;
+            if (startup.Log) sessionLogItem.Checked = true;
+            if (startup.Port != null)
+            {
+                for (int i = 0; i < portBox.Items.Count; i++)
+                {
+                    if (((PortInfo)portBox.Items[i]).Name == startup.Port) { portBox.SelectedIndex = i; break; }
+                }
+            }
+        }
+
+        // Runs once the window is visible, so any message box appears on top of it
+        private void ConnectFromCommandLine()
+        {
+            if (startup.Port != null && SelectedPortName() != startup.Port)
+            {
+                ShowMessage(startup.Port + " was not found. Plug in the device, then pick its port from the list.", MessageBoxIcon.Warning);
+                return;
+            }
+            if (startup.Connect) Connect();
         }
 
         // ------------------------------------------------------------------ theme & preferences
@@ -1111,6 +1165,34 @@ namespace SerialScope
             if (sessionLog != null) WriteSessionLog(text);
         }
 
+        // ------------------------------------------------------------------ portable mode
+
+        private void TogglePortableMode()
+        {
+            bool turnOn = !Settings.PortableMode;
+            SavePreferences();
+            try
+            {
+                if (turnOn)
+                {
+                    settings.SaveAs(Settings.PortablePath);
+                    ShowMessage("Portable mode is on.\n\nSettings are now kept in " + Settings.PortableFileName + " next to SerialScope.exe, and session logs in a Logs folder beside it. Copy the whole folder to take SerialScope anywhere.", MessageBoxIcon.Information);
+                }
+                else
+                {
+                    settings.SaveAs(Settings.AppDataPath);
+                    File.Delete(Settings.PortablePath);
+                    ShowMessage("Portable mode is off. Settings are stored in your Windows user profile again.", MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowMessage("Couldn't switch portable mode.\n\n" + ex.Message +
+                    (turnOn ? "\n\nSerialScope needs to be in a folder you can write to (not Program Files)." : ""), MessageBoxIcon.Warning);
+            }
+            portableItem.Checked = Settings.PortableMode;
+        }
+
         // ------------------------------------------------------------------ session log
 
         private void StartSessionLog()
@@ -1341,6 +1423,7 @@ namespace SerialScope
         {
             base.OnShown(e);
             if (plotMode) ApplySplitRatio();   // the real height is only known once the window is shown
+            if (startup.Connect || startup.Port != null) BeginInvoke(new MethodInvoker(ConnectFromCommandLine));
 
             // A newer version seen on an earlier check is shown straight away
             string known = settings.Get("latestVersion", null);

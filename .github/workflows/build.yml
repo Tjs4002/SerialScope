@@ -16,6 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Run tests
+        shell: cmd
+        run: tests\run-tests.bat
+
       - name: Build
         shell: cmd
         run: build.bat
