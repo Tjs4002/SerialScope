@@ -20,15 +20,36 @@ jobs:
         shell: cmd
         run: build.bat
 
+      - name: Prepare release files
+        shell: pwsh
+        run: |
+          $version = if ($env:GITHUB_REF -like 'refs/tags/v*') { $env:GITHUB_REF_NAME.TrimStart('v') } else { 'dev' }
+          $hash = (Get-FileHash bin/SerialScope.exe -Algorithm SHA256).Hash.ToLower()
+          "$hash  SerialScope.exe" | Set-Content bin/SHA256SUMS.txt -Encoding ascii
+
+          # Scoop manifest pointing at this release
+          $manifest = Get-Content packaging/scoop/serialscope.json -Raw | ConvertFrom-Json
+          $manifest.version = $version
+          $manifest.url = "https://github.com/Tjs4002/SerialScope/releases/download/v$version/SerialScope.exe"
+          $manifest.hash = $hash
+          $manifest | ConvertTo-Json -Depth 5 | Set-Content bin/serialscope.json -Encoding utf8NoBOM
+          Write-Host "SerialScope $version  sha256 $hash"
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: SerialScope
-          path: bin/SerialScope.exe
+          path: |
+            bin/SerialScope.exe
+            bin/SHA256SUMS.txt
+            bin/serialscope.json
 
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: bin/SerialScope.exe
+          files: |
+            bin/SerialScope.exe
+            bin/SHA256SUMS.txt
+            bin/serialscope.json
           generate_release_notes: true

@@ -1,0 +1,19 @@
+{
+    "version": "0.0.0",
+    "description": "A clean, lightweight serial monitor and plotter for Windows.",
+    "homepage": "https://github.com/Tjs4002/SerialScope",
+    "license": "MIT",
+    "url": "https://github.com/Tjs4002/SerialScope/releases/download/v0.0.0/SerialScope.exe",
+    "hash": "",
+    "bin": "SerialScope.exe",
+    "shortcuts": [
+        [
+            "SerialScope.exe",
+            "SerialScope"
+        ]
+    ],
+    "checkver": "github",
+    "autoupdate": {
+        "url": "https://github.com/Tjs4002/SerialScope/releases/download/v$version/SerialScope.exe"
+    }
+}

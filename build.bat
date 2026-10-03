@@ -14,7 +14,7 @@ if not exist "%CSC%" (
 
 if not exist bin mkdir bin
 
-"%CSC%" /nologo /target:winexe /optimize+ /platform:anycpu ^
+"%CSC%" /nologo /target:winexe /optimize+ /platform:anycpu /codepage:65001 ^
   /out:bin\SerialScope.exe ^
   /win32icon:src\app.ico ^
   /win32manifest:src\app.manifest ^

@@ -52,15 +52,24 @@
 - **No surprise resets:** DTR and RTS stay low, so your board keeps running when you connect.
 
 **Reading**
-- **Live plotter** with zoom, pan, box zoom, hover values and a clickable legend. See [Plotter](#plotter).
-- **Record to CSV** for Excel, Google Sheets or Python.
-- **Timestamps** to the millisecond, **Pause display** without losing data, and **Save log** to a text file.
-- **Send data** back to the board, with a choice of line ending.
+- **Error and warning highlighting:** errors in red, warnings in amber and debug lines dimmed. Understands ESP-IDF (`E (123) wifi:`) and Arduino-ESP32 (`[E][main.cpp:42]`) logs out of the box.
+- **Search** with <kbd>Ctrl</kbd> + <kbd>F</kbd>: every match highlighted, with next/previous and a match count.
+- **Hex view** for binary devices: offsets, raw bytes and printable characters.
+- **Live plotter** with zoom, pan, box zoom, hover values, a time axis and fixed ranges. See [Plotter](#plotter).
+- **Record to CSV** for Excel, Google Sheets or Python, and **save graphs** as PNG images.
+- **Timestamps** to the millisecond, and **Pause display** without losing data.
+
+**Sending**
+- **Send box** with a choice of line ending.
+- **History:** <kbd>↑</kbd> / <kbd>↓</kbd> bring back the last 50 messages.
+- **Saved commands:** keep the messages you send often one click away (★ button).
 
 **Comfort**
-- **Dark and light themes,** right down to the title bar and scroll bars.
+- **Session logs:** optionally save everything to `Documents\SerialScope\Logs`, one file per connection.
+- **Update notice** in the status bar when a new version is out.
+- **Dark and light themes,** right down to the title bar, scroll bars and menus.
 - **Keyboard shortcuts** and adjustable text size.
-- **Remembers everything:** port, baud rate, theme, view, options and window size.
+- **Remembers everything:** port, baud rate, theme, view, options, history and window size.
 
 <table>
   <tr>
@@ -78,6 +87,14 @@
 1. Open the [**latest release**](https://github.com/Tjs4002/SerialScope/releases/latest).
 2. Download **`SerialScope.exe`**.
 3. Run it. That's all.
+
+**With [Scoop](https://scoop.sh):**
+
+```powershell
+scoop install https://github.com/Tjs4002/SerialScope/releases/latest/download/serialscope.json
+```
+
+Each release also includes `SHA256SUMS.txt`, so you can check your download with `Get-FileHash SerialScope.exe`.
 
 > [!NOTE]
 > **"Windows protected your PC"?** SerialScope isn't code-signed yet, so SmartScreen may warn you the first time. Click **More info → Run anyway**. Prefer not to trust a downloaded binary? [Build it yourself](#build-from-source) in a few seconds; every release is also built publicly by [GitHub Actions](https://github.com/Tjs4002/SerialScope/actions).
@@ -121,6 +138,17 @@ Want to try it now? Flash [`examples/PlotterDemo`](examples/PlotterDemo/PlotterD
 | Exact values | Hover over the graph |
 | Hide or show a line | Click its name in the legend |
 | Record to CSV | **● Record**, then **■ Stop** to save |
+| Save the graph as an image | Camera button next to **Record** |
+| Clock time on the bottom axis | **Time axis** button on the graph |
+| Fixed value range (e.g. 0–4095) | **Y range…** button on the graph; **Automatic** to undo |
+
+## Highlighting, search and hex view
+
+- **Highlighting** colours whole lines: red for errors, amber for warnings, dimmed for debug output. It recognises ESP-IDF logs (`E (1234) wifi: …`), Arduino-ESP32 logs (`[  1234][W][main.cpp:42] …`) and lines containing words like *error*, *panic*, *failed* or *timeout*. Turn it off under ⚙ **Settings**.
+- **Search** (<kbd>Ctrl</kbd> + <kbd>F</kbd>) highlights every match. <kbd>Enter</kbd> / <kbd>Shift</kbd> + <kbd>Enter</kbd> (or <kbd>F3</kbd>) jump between them; <kbd>Esc</kbd> closes the bar. Auto-scroll pauses while you search.
+- **Hex view** shows 16 bytes per line with the offset, the bytes in hex and their printable characters, for GPS modules, Modbus devices and other binary protocols.
+
+Try them with [`examples/LogDemo`](examples/LogDemo/LogDemo.ino): it prints log lines at every level, answers what you send, and sends raw bytes when you type `binary`.
 
 ## Keyboard shortcuts
 
@@ -128,10 +156,13 @@ Want to try it now? Flash [`examples/PlotterDemo`](examples/PlotterDemo/PlotterD
 |---|---|
 | <kbd>F5</kbd> | Connect / disconnect |
 | <kbd>Ctrl</kbd> + <kbd>1</kbd> / <kbd>2</kbd> | Text view / Plotter |
+| <kbd>Ctrl</kbd> + <kbd>F</kbd> | Find in output |
+| <kbd>F3</kbd> / <kbd>Shift</kbd> + <kbd>F3</kbd> | Next / previous match |
 | <kbd>Ctrl</kbd> + <kbd>L</kbd> | Clear output and graph |
 | <kbd>Ctrl</kbd> + <kbd>S</kbd> | Save log |
 | <kbd>Ctrl</kbd> + <kbd>+</kbd> / <kbd>−</kbd> / <kbd>0</kbd> | Bigger / smaller / default text size |
 | <kbd>Enter</kbd> in the send box | Send |
+| <kbd>↑</kbd> / <kbd>↓</kbd> in the send box | Previous / next sent message |
 
 ## Build from source
 
@@ -151,21 +182,27 @@ The app is written to `bin\SerialScope.exe`.
 ```
 SerialScope/
 ├── src/
-│   ├── MainForm.cs        Main window: connection, output, sending
-│   ├── PlotView.cs        Live graph with zoom, pan and hover values
+│   ├── MainForm.cs        Main window: connection, output, sending, settings
+│   ├── OutputView.cs      Coloured output, highlighting rules and search
+│   ├── PlotView.cs        Live graph with zoom, pan, time axis and hover values
 │   ├── Recorder.cs        Records plotted readings to CSV
-│   ├── Controls.cs        Themed buttons, drop-downs, check boxes, status dot
+│   ├── UpdateChecker.cs   Checks GitHub for a newer release
+│   ├── Controls.cs        Themed buttons, drop-downs, check boxes, menus
 │   ├── Theme.cs           Dark and light colour palettes
 │   ├── PortInfo.cs        Port list with friendly device names
 │   ├── Settings.cs        Saved preferences (%APPDATA%\SerialScope\settings.ini)
 │   ├── AboutForm.cs       About dialog
 │   ├── CustomBaudForm.cs  Custom baud rate dialog
+│   ├── RangeForm.cs       Plotter value range dialog
 │   ├── AppInfo.cs         Name, version, author, links
 │   ├── Program.cs         Entry point
 │   ├── app.ico            Application icon
 │   └── app.manifest       DPI awareness and modern Windows controls
-├── examples/PlotterDemo   Arduino sketch that prints test waveforms
-├── tools/                 Icon and banner generators
+├── examples/
+│   ├── PlotterDemo        Prints test waveforms for the plotter
+│   └── LogDemo            Prints log levels and answers commands
+├── packaging/             Scoop manifest template (winget manifests are generated)
+├── tools/                 Icon, banner and winget manifest generators
 ├── docs/                  Screenshots and README images
 └── build.bat              One-step build
 ```
@@ -195,6 +232,18 @@ Try a different USB cable (many are charge-only), then install the driver for yo
 <summary><b>The plotter says "Waiting for numbers".</b></summary>
 
 Each line must contain only numbers, optionally with names, like `23.5`, `1 2 3` or `temp:23.5,hum:41`. Lines with other text are shown in the text panel but not plotted.
+</details>
+
+<details>
+<summary><b>Does SerialScope connect to the internet?</b></summary>
+
+Only to check for updates: at most twice a day it asks GitHub's public API for the latest release version. No data about you or your devices is sent. Turn it off under ⚙ **Settings → Check for updates automatically**.
+</details>
+
+<details>
+<summary><b>Where are session logs saved?</b></summary>
+
+In `Documents\SerialScope\Logs`, one file per connection named after the port and time (e.g. `COM3-2026-10-04-143012.txt`). Turn them on and open the folder from ⚙ **Settings**.
 </details>
 
 <details>

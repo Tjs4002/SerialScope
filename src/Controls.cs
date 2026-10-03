@@ -274,6 +274,85 @@ namespace SerialScope
         }
     }
 
+    // Menu colours that follow the app theme
+    internal sealed class ThemedColorTable : ProfessionalColorTable
+    {
+        private readonly Theme t;
+        public ThemedColorTable(Theme theme) { t = theme; UseSystemColors = false; }
+
+        public override Color ToolStripDropDownBackground { get { return t.Surface; } }
+        public override Color ImageMarginGradientBegin { get { return t.Surface; } }
+        public override Color ImageMarginGradientMiddle { get { return t.Surface; } }
+        public override Color ImageMarginGradientEnd { get { return t.Surface; } }
+        public override Color MenuBorder { get { return t.Border; } }
+        public override Color MenuItemBorder { get { return t.SurfaceHover; } }
+        public override Color MenuItemSelected { get { return t.SurfaceHover; } }
+        public override Color MenuItemSelectedGradientBegin { get { return t.SurfaceHover; } }
+        public override Color MenuItemSelectedGradientEnd { get { return t.SurfaceHover; } }
+        public override Color MenuItemPressedGradientBegin { get { return t.SurfaceHover; } }
+        public override Color MenuItemPressedGradientEnd { get { return t.SurfaceHover; } }
+        public override Color SeparatorDark { get { return t.Border; } }
+        public override Color SeparatorLight { get { return t.Surface; } }
+        public override Color CheckBackground { get { return t.Surface; } }
+        public override Color CheckSelectedBackground { get { return t.SurfaceHover; } }
+        public override Color CheckPressedBackground { get { return t.SurfaceHover; } }
+    }
+
+    internal sealed class ThemedMenuRenderer : ToolStripProfessionalRenderer
+    {
+        private readonly Theme t;
+
+        public ThemedMenuRenderer(Theme theme) : base(new ThemedColorTable(theme))
+        {
+            t = theme;
+            RoundedEdges = false;
+        }
+
+        protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
+        {
+            e.TextColor = e.Item.Enabled ? t.Text : t.Muted;
+            base.OnRenderItemText(e);
+        }
+
+        protected override void OnRenderArrow(ToolStripArrowRenderEventArgs e)
+        {
+            e.ArrowColor = t.Muted;
+            base.OnRenderArrow(e);
+        }
+
+        // Green tick instead of the system check glyph
+        protected override void OnRenderItemCheck(ToolStripItemImageRenderEventArgs e)
+        {
+            var r = e.ImageRectangle;
+            var g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            using (var pen = new Pen(t.Success, 2f))
+            {
+                pen.StartCap = pen.EndCap = LineCap.Round;
+                g.DrawLines(pen, new[]
+                {
+                    new PointF(r.Left + r.Width * 0.22f, r.Top + r.Height * 0.52f),
+                    new PointF(r.Left + r.Width * 0.42f, r.Top + r.Height * 0.72f),
+                    new PointF(r.Left + r.Width * 0.80f, r.Top + r.Height * 0.30f)
+                });
+            }
+            g.SmoothingMode = SmoothingMode.None;
+        }
+
+        public static void Apply(ToolStrip strip, Theme theme)
+        {
+            strip.Renderer = new ThemedMenuRenderer(theme);
+            strip.BackColor = theme.Surface;
+            strip.ForeColor = theme.Text;
+            foreach (ToolStripItem item in strip.Items)
+            {
+                item.ForeColor = theme.Text;
+                var sub = item as ToolStripMenuItem;
+                if (sub != null && sub.HasDropDownItems) Apply(sub.DropDown, theme);
+            }
+        }
+    }
+
     internal static class NativeMethods
     {
         private const int EM_SETCUEBANNER = 0x1501;

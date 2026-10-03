@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCompany("Tejas")]
 [assembly: AssemblyProduct("SerialScope")]
 [assembly: AssemblyCopyright("Copyright (c) 2026 Tjs4002")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: AssemblyInformationalVersion("1.0.0")]
+[assembly: AssemblyVersion("1.1.0.0")]
+[assembly: AssemblyFileVersion("1.1.0.0")]
+[assembly: AssemblyInformationalVersion("1.1.0")]
 [assembly: ComVisible(false)]
 
 namespace SerialScope
@@ -16,7 +16,7 @@ namespace SerialScope
     internal static class AppInfo
     {
         public const string Name = "SerialScope";
-        public const string Version = "1.0.0";
+        public const string Version = "1.1.0";
         public const string Author = "Tejas";
         public const string GitHubUser = "Tjs4002";
         public const string ProfileUrl = "https://github.com/Tjs4002";

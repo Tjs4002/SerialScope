@@ -44,7 +44,10 @@ namespace SerialScope
             public bool Visible = true;
         }
 
-        private enum OverlayAction { ZoomOut, ZoomIn, Fit, Live }
+        private enum OverlayAction { ZoomOut, ZoomIn, Fit, Live, TimeAxis, Range }
+
+        // Raised when the user clicks "Y range..."; the host shows a dialog and calls SetFixedRange
+        public event EventHandler RangeRequested;
 
         private readonly List<Series> series = new List<Series>();
         private readonly List<KeyValuePair<Rectangle, Series>> legendHits = new List<KeyValuePair<Rectangle, Series>>();
@@ -66,6 +69,11 @@ namespace SerialScope
         private double viewEnd;            // right edge when not following
         private bool autoY = true;
         private double yMin, yMax;         // used when autoY is off
+        private bool fixedRange;           // user-set value range that Fit keeps
+        private double fixedMin, fixedMax;
+        private bool timeAxis;             // label the bottom axis with clock time instead of reading numbers
+        private readonly long[] times = new long[History];   // arrival time of each stored reading
+        private bool exporting;            // drawing for "Save image": no buttons or hover box
 
         // Values from the last paint, used to convert mouse positions
         private Rectangle area;
@@ -110,12 +118,58 @@ namespace SerialScope
             Fit();
         }
 
-        // Back to auto-scaled values and the latest readings
+        // Back to auto-scaled values (or the fixed range) and the latest readings
         public void Fit()
         {
             viewWidth = defaultWidth;
             followLatest = true;
-            autoY = true;
+            ResetValueAxis();
+            Invalidate();
+        }
+
+        private void ResetValueAxis()
+        {
+            if (fixedRange) { autoY = false; yMin = fixedMin; yMax = fixedMax; }
+            else autoY = true;
+        }
+
+        public bool HasFixedRange { get { return fixedRange; } }
+        public double FixedMin { get { return fixedMin; } }
+        public double FixedMax { get { return fixedMax; } }
+
+        public void SetFixedRange(double min, double max)
+        {
+            fixedRange = true;
+            fixedMin = Math.Min(min, max);
+            fixedMax = Math.Max(min, max);
+            if (fixedMax - fixedMin < 1e-12) fixedMax = fixedMin + 1;
+            ResetValueAxis();
+            Invalidate();
+        }
+
+        public void ClearFixedRange()
+        {
+            fixedRange = false;
+            ResetValueAxis();
+            Invalidate();
+        }
+
+        public bool TimeAxis
+        {
+            get { return timeAxis; }
+            set { timeAxis = value; Invalidate(); }
+        }
+
+        // Saves the current view as a PNG, without the on-graph buttons or hover box
+        public void SaveImage(string path)
+        {
+            using (var bmp = new Bitmap(Math.Max(1, Width), Math.Max(1, Height)))
+            {
+                exporting = true;
+                try { DrawToBitmap(bmp, new Rectangle(0, 0, bmp.Width, bmp.Height)); }
+                finally { exporting = false; }
+                bmp.Save(path, System.Drawing.Imaging.ImageFormat.Png);
+            }
             Invalidate();
         }
 
@@ -154,6 +208,7 @@ namespace SerialScope
                 if (!names.Contains(s.Name)) s.Values[head] = double.NaN;
             }
 
+            times[head] = DateTime.Now.Ticks;
             head = (head + 1) % History;
             if (count < History) count++;
             totalSamples++;
@@ -226,6 +281,14 @@ namespace SerialScope
             if (sample < FirstStored || sample >= totalSamples) return double.NaN;
             long back = totalSamples - sample;   // 1 = newest
             return s.Values[(int)(((head - back) % History + History) % History)];
+        }
+
+        // Arrival time of a stored reading, or DateTime.MinValue if it is no longer stored
+        private DateTime TimeAt(long sample)
+        {
+            if (sample < FirstStored || sample >= totalSamples) return DateTime.MinValue;
+            long back = totalSamples - sample;
+            return new DateTime(times[(int)(((head - back) % History + History) % History)]);
         }
 
         private void GetXRange(out double x0, out double x1)
@@ -433,6 +496,8 @@ namespace SerialScope
                 case OverlayAction.ZoomOut: ZoomTime(2.0, followLatest ? drawX1 : centre); break;
                 case OverlayAction.Fit: Fit(); break;
                 case OverlayAction.Live: followLatest = true; Invalidate(); break;
+                case OverlayAction.TimeAxis: TimeAxis = !timeAxis; break;
+                case OverlayAction.Range: if (RangeRequested != null) RangeRequested(this, EventArgs.Empty); break;
             }
         }
 
@@ -518,14 +583,25 @@ namespace SerialScope
                     TextRenderer.DrawText(g, label, labelFont, new Point(area.Left - size.Width - 6, y - size.Height / 2), theme.Muted);
                 }
 
-                // Time axis: sample numbers at round intervals
+                // Bottom axis: reading numbers (or their arrival times) at round intervals
                 double xStep = Math.Max(1, NiceStep((x1 - x0) / 6));
+                double spanSeconds = (TimeAt(s1) - TimeAt(s0)).TotalSeconds;
                 for (double t = Math.Ceiling(x0 / xStep) * xStep; t <= x1; t += xStep)
                 {
                     if (t < 0) continue;
                     float x = MapX(t);
                     g.DrawLine(gridPen, x, area.Top, x, area.Bottom);
-                    string label = ((long)t).ToString();
+                    string label;
+                    if (timeAxis)
+                    {
+                        DateTime at = TimeAt((long)t);
+                        if (at == DateTime.MinValue) continue;
+                        label = at.ToString(spanSeconds < 20 ? "HH:mm:ss.f" : "HH:mm:ss");
+                    }
+                    else
+                    {
+                        label = ((long)t).ToString();
+                    }
                     Size size = TextRenderer.MeasureText(label, labelFont);
                     TextRenderer.DrawText(g, label, labelFont, new Point((int)x - size.Width / 2, area.Bottom + 5), theme.Muted);
                 }
@@ -535,6 +611,7 @@ namespace SerialScope
                 g.DrawRectangle(axisPen, area);
 
             DrawSeries(g, palette, s0, s1);
+            if (exporting) return;
             DrawOverlayButtons(g);
 
             if (boxZooming)
@@ -592,6 +669,8 @@ namespace SerialScope
         {
             var items = new List<KeyValuePair<string, OverlayAction>>();
             if (!followLatest) items.Add(new KeyValuePair<string, OverlayAction>("Live ▸", OverlayAction.Live));
+            items.Add(new KeyValuePair<string, OverlayAction>("Time axis", OverlayAction.TimeAxis));
+            items.Add(new KeyValuePair<string, OverlayAction>(fixedRange ? "Y range ✓" : "Y range…", OverlayAction.Range));
             items.Add(new KeyValuePair<string, OverlayAction>("−", OverlayAction.ZoomOut));
             items.Add(new KeyValuePair<string, OverlayAction>("+", OverlayAction.ZoomIn));
             items.Add(new KeyValuePair<string, OverlayAction>("Fit", OverlayAction.Fit));
@@ -602,7 +681,10 @@ namespace SerialScope
                 int w = Math.Max(28, TextRenderer.MeasureText(items[i].Key, legendFont).Width + 14);
                 var r = new Rectangle(x - w, y, w, h);
                 bool hover = mouseInside && r.Contains(mouse);
-                bool live = items[i].Value == OverlayAction.Live;
+                OverlayAction action = items[i].Value;
+                bool live = action == OverlayAction.Live
+                            || (action == OverlayAction.TimeAxis && timeAxis)
+                            || (action == OverlayAction.Range && fixedRange);   // highlighted when active
                 using (var b = new SolidBrush(live ? theme.Success : hover ? theme.SurfaceHover : theme.Surface))
                     g.FillRectangle(b, r);
                 using (var pen = new Pen(live ? theme.Success : theme.Border))
@@ -642,7 +724,8 @@ namespace SerialScope
                 }
             }
 
-            string title = "Reading #" + sample;
+            DateTime arrived = TimeAt(sample);
+            string title = "Reading #" + sample + (arrived != DateTime.MinValue ? "   " + arrived.ToString("HH:mm:ss.fff") : "");
             int width = TextRenderer.MeasureText(title, labelFont).Width;
             foreach (var l in lines) width = Math.Max(width, TextRenderer.MeasureText(l.Value, valueFont).Width + 16);
             int height = 22 + lines.Count * 17;

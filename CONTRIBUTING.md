@@ -33,4 +33,9 @@ Thanks for helping out. Bug reports, ideas and pull requests are all welcome.
    git tag v1.0.1
    git push origin v1.0.1
    ```
-3. GitHub Actions builds `SerialScope.exe` and attaches it to a new release automatically.
+3. GitHub Actions builds `SerialScope.exe` and attaches it to a new release automatically, together with `SHA256SUMS.txt` and the Scoop manifest `serialscope.json`.
+4. Optional, for winget: once the release is published, generate the manifests and submit them to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs):
+   ```bat
+   powershell -ExecutionPolicy Bypass -File tools\make-winget-manifest.ps1 -Version 1.0.1
+   wingetcreate submit packaging\winget\1.0.1
+   ```
