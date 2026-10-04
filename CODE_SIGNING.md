@@ -1,15 +1,23 @@
-# Code signing policy
+# Code signing and privacy policy
 
-Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+## Code signing
 
-Release builds of `SerialScope.exe` are built from this repository's source code by [GitHub Actions](https://github.com/Tjs4002/SerialScope/actions) and submitted to SignPath for signing. Each release is approved by hand before it is signed. Only binaries built from this repository are signed.
+SerialScope releases are **not code-signed yet**, so Windows SmartScreen may show a warning the first time you run a downloaded copy. Click **More info → Run anyway**, or install with [Scoop](README.md#download), which usually avoids the warning.
 
-## Team roles
+Until releases are signed, you can check that a download is genuine:
+
+- Every release is built from this repository's source code by [GitHub Actions](https://github.com/Tjs4002/SerialScope/actions), in public, and runs the automated tests before it is published.
+- Each release includes `SHA256SUMS.txt`. Compare it with `Get-FileHash SerialScope.exe` in PowerShell.
+- You can [build it yourself](README.md#build-from-source) in a few seconds with the C# compiler that ships with Windows.
+
+The release workflow is already prepared for signing, so signing can be switched on without changing how releases are made. When it is, this page will say who provides the certificate, and only binaries built from this repository will be signed.
+
+### Team roles
 
 | Role | Members |
 |---|---|
 | Committers and reviewers | [Tjs4002](https://github.com/Tjs4002) |
-| Approvers | [Tjs4002](https://github.com/Tjs4002) |
+| Release approvers | [Tjs4002](https://github.com/Tjs4002) |
 
 Contributions from other people come in through pull requests, which are reviewed by a committer before they are merged.
 

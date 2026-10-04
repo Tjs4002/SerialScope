@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 - The creator credit in the status bar, About dialog and file properties now reads Tjs4002.
+- The code signing page now says plainly that releases aren't signed yet, and how to check a download in the meantime.
 
 ## [1.2.0] - 2026-10-04
 
