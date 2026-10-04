@@ -311,6 +311,13 @@ details > div { padding: 0 4px 22px; color: var(--muted); }
 .cta img { width: 76px; height: 76px; margin: 0 auto 18px; border-radius: 18px; box-shadow: 0 0 40px -6px var(--green-glow); }
 .cta p { color: var(--muted); font-size: 17px; margin: 0 auto 28px; max-width: 520px; }
 
+/* Wordmark */
+.wordmark { padding: 24px 0 8px; }
+.wordmark-box { position: relative; height: clamp(130px, 25vw, 300px); font-family: var(--sans); }
+.wordmark-hint { text-align: center; color: var(--dim); font: 12px var(--mono); letter-spacing: .04em; margin-top: 4px; }
+.tech-text { position: relative; width: 100%; height: 100%; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.tech-text-canvas { display: block; width: 100%; height: 100%; }
+
 /* Footer */
 footer { padding: 48px 0 56px; border-top: 1px solid var(--line); color: var(--dim); font-size: 14px; }
 footer .wrap { display: flex; justify-content: space-between; gap: 28px; flex-wrap: wrap; align-items: center; }
@@ -640,6 +647,13 @@ build.bat</pre>
   </div>
 </section>
 
+<section class="wordmark" aria-label="SerialScope">
+  <div class="wrap">
+    <div class="wordmark-box"><div id="wordmark"></div></div>
+    <div class="wordmark-hint">Hover over a letter, or drag it.</div>
+  </div>
+</section>
+
 <footer>
   <div class="wrap">
     <a class="brand" href="#top"><img src="icon.png" alt="">SerialScope</a>
@@ -654,7 +668,20 @@ build.bat</pre>
   </div>
 </footer>
 
+<script src="techtext.js"></script>
 <script>
+TechText(document.getElementById("wordmark"), {
+  text: "SerialScope",
+  fontWeight: 800,
+  fontSize: 170,
+  letterSpacing: -0.04,
+  color: "#e7eee9",
+  accentColor: "#22c55e",
+  reveal: "letter",
+  dashLength: 4,
+  dashGap: 2,
+  specks: 15
+});
 (function () {
   var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
