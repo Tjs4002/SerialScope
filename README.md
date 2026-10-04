@@ -265,7 +265,7 @@ SerialScope/
 │   ├── PlotterDemo            Prints test waveforms for the plotter
 │   └── LogDemo                Prints log levels and answers commands
 ├── packaging/                 Scoop template, winget manifests and Microsoft Store manifest
-├── tools/                     Icon, banner, winget manifest and Store package (make-msix.ps1) scripts
+├── tools/                     Icon, banner, winget manifest, Store package and Store art scripts
 ├── docs/                      Website (GitHub Pages), screenshots and README images
 └── build.bat                  One-step build
 ```
