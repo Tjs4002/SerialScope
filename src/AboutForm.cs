@@ -71,7 +71,7 @@ namespace SerialScope
                 Font = new Font("Segoe UI Semibold", 11F),
                 Margin = new Padding(0, 0, 0, 2)
             });
-            layout.Controls.Add(MakeLink(theme, "GitHub: @" + AppInfo.GitHubUser, AppInfo.ProfileUrl, new Padding(0, 0, 0, 8)));
+            layout.Controls.Add(MakeLink(theme, "GitHub: " + AppInfo.ProfileUrl.Replace("https://", ""), AppInfo.ProfileUrl, new Padding(0, 0, 0, 8)));
             layout.Controls.Add(MakeLink(theme, "Source code: " + AppInfo.RepoUrl.Replace("https://", ""), AppInfo.RepoUrl, Padding.Empty));
 
             var close = new FlatButton("Close", ButtonKind.Normal);

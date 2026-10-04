@@ -8,6 +8,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ### Added
 - Project website at [tjs4002.github.io/SerialScope](https://tjs4002.github.io/SerialScope/), served by GitHub Pages from the `docs` folder.
 
+### Changed
+- The creator credit in the status bar, About dialog and file properties now reads Tjs4002.
+
 ## [1.2.0] - 2026-10-04
 
 ### Added

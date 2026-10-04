@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("SerialScope")]
 [assembly: AssemblyDescription("A clean, lightweight serial monitor and plotter for Windows.")]
-[assembly: AssemblyCompany("Tejas")]
+[assembly: AssemblyCompany("Tjs4002")]
 [assembly: AssemblyProduct("SerialScope")]
 [assembly: AssemblyCopyright("Copyright (c) 2026 Tjs4002")]
 [assembly: AssemblyVersion("1.2.0.0")]
@@ -17,7 +17,7 @@ namespace SerialScope
     {
         public const string Name = "SerialScope";
         public const string Version = "1.2.0";
-        public const string Author = "Tejas";
+        public const string Author = "Tjs4002";
         public const string GitHubUser = "Tjs4002";
         public const string ProfileUrl = "https://github.com/Tjs4002";
         public const string RepoUrl = "https://github.com/Tjs4002/SerialScope";

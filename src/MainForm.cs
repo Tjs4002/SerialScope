@@ -390,16 +390,16 @@ namespace SerialScope
             statsLabel.AutoSize = true;
             statsLabel.Padding = new Padding(0, 6, 0, 0);
             statsLabel.Tag = "muted";
-            // Credit: "Made by Tejas · @Tjs4002", the handle opens the GitHub profile
+            // Credit: "Made by Tjs4002", the name opens the GitHub profile
             var credit = new FlowLayoutPanel { Dock = DockStyle.Right, AutoSize = true, WrapContents = false, Padding = new Padding(0, 6, 0, 0), Tag = "surface" };
             creditSeparator.Text = "|";
             creditSeparator.AutoSize = true;
             creditSeparator.Margin = new Padding(14, 0, 14, 0);
             creditSeparator.Tag = "muted";
             credit.Controls.Add(creditSeparator);
-            var madeBy = new Label { Text = "Made by " + AppInfo.Author + "  ·", AutoSize = true, Margin = new Padding(0), Tag = "muted" };
+            var madeBy = new Label { Text = "Made by", AutoSize = true, Margin = new Padding(0), Tag = "muted" };
             credit.Controls.Add(madeBy);
-            creditLink.Text = "@" + AppInfo.GitHubUser;
+            creditLink.Text = AppInfo.GitHubUser;
             creditLink.AutoSize = true;
             creditLink.Margin = new Padding(2, 0, 0, 0);
             creditLink.LinkBehavior = LinkBehavior.HoverUnderline;
