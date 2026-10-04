@@ -1,6 +1,7 @@
 # Draws the Microsoft Store logos into packaging\msix\listing:
 #   store-boxart-2160.png     1:1 box art (2160 x 2160)
 #   store-poster-1440x2160.png 9:16 poster art (1440 x 2160)
+#   store-icon-300/150/71.png  Store display images (app tile icons)
 # Reuses the logo drawing code from make-icon.ps1.
 
 $ErrorActionPreference = "Stop"
@@ -56,3 +57,11 @@ function New-Art([int]$W, [int]$H, [int]$logo, [int]$logoTop, [bool]$tagline, [s
 
 New-Art 2160 2160 1150 360 $false "store-boxart-2160.png"
 New-Art 1440 2160 860 520 $true "store-poster-1440x2160.png"
+
+# Store display images: the app icon itself at each size
+foreach ($s in 300, 150, 71) {
+    $icon = Render $s
+    $path = Join-Path $out "store-icon-$s.png"
+    $icon.Save($path, [System.Drawing.Imaging.ImageFormat]::Png); $icon.Dispose()
+    Write-Host "Wrote $path"
+}
