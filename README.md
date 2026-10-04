@@ -11,6 +11,8 @@
 </p>
 
 <p align="center">
+  <a href="https://tjs4002.github.io/SerialScope/"><b>Website</b></a>
+  &nbsp;·&nbsp;
   <a href="https://github.com/Tjs4002/SerialScope/releases/latest"><b>Download</b></a>
   &nbsp;·&nbsp;
   <a href="#features"><b>Features</b></a>
@@ -264,7 +266,7 @@ SerialScope/
 │   └── LogDemo                Prints log levels and answers commands
 ├── packaging/                 Scoop template and winget manifests
 ├── tools/                     Icon, banner and winget manifest generators
-├── docs/                      Screenshots and README images
+├── docs/                      Website (GitHub Pages), screenshots and README images
 └── build.bat                  One-step build
 ```
 </details>
