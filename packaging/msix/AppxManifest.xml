@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Microsoft Store package manifest. tools\make-msix.ps1 fills in {VERSION} and {DISPLAYNAME}.
+<!-- Microsoft Store package manifest, filled in by tools\make-msix.ps1 (version and display name).
      Identity values come from Partner Center (Product management > Product identity). -->
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
-  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  IgnorableNamespaces="uap uap3 desktop rescap">
+  IgnorableNamespaces="uap rescap">
 
   <Identity
     Name="Tjs4002.SerialScope"
     Publisher="CN=20B67E04-FF4D-4504-8E64-001E956A11D0"
     Version="{VERSION}"
-    ProcessorArchitecture="neutral" />
+    ProcessorArchitecture="x64" />
 
   <Properties>
     <DisplayName>{DISPLAYNAME}</DisplayName>
@@ -35,17 +33,9 @@
       <uap:VisualElements
         DisplayName="{DISPLAYNAME}"
         Description="Serial monitor and live plotter for ESP32, Arduino and any serial device."
-        BackgroundColor="transparent"
+        BackgroundColor="#0B0F0D"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png" />
-      <Extensions>
-        <!-- Lets SerialScope be started, with its command-line options, from a command prompt -->
-        <uap3:Extension Category="windows.appExecutionAlias" Executable="SerialScope.exe" EntryPoint="Windows.FullTrustApplication">
-          <uap3:AppExecutionAlias>
-            <desktop:ExecutionAlias Alias="SerialScope.exe" />
-          </uap3:AppExecutionAlias>
-        </uap3:Extension>
-      </Extensions>
     </Application>
   </Applications>
 
