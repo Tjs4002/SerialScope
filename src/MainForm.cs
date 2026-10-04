@@ -456,14 +456,17 @@ namespace SerialScope
             settingsMenu.Items.Add(new ToolStripSeparator());
             settingsMenu.Items.Add(sessionLogItem);
             settingsMenu.Items.Add(openLogsItem);
-            settingsMenu.Items.Add(new ToolStripSeparator());
-            portableItem.ToolTipText = "Keep settings and logs next to SerialScope.exe, for running from a USB stick";
-            portableItem.Checked = Settings.PortableMode;
-            portableItem.Click += delegate { TogglePortableMode(); };
-            settingsMenu.Items.Add(portableItem);
-            settingsMenu.Items.Add(new ToolStripSeparator());
-            settingsMenu.Items.Add(updateStartupItem);
-            settingsMenu.Items.Add(updateNowItem);
+            if (!AppInfo.IsStoreApp)
+            {
+                settingsMenu.Items.Add(new ToolStripSeparator());
+                portableItem.ToolTipText = "Keep settings and logs next to SerialScope.exe, for running from a USB stick";
+                portableItem.Checked = Settings.PortableMode;
+                portableItem.Click += delegate { TogglePortableMode(); };
+                settingsMenu.Items.Add(portableItem);
+                settingsMenu.Items.Add(new ToolStripSeparator());
+                settingsMenu.Items.Add(updateStartupItem);
+                settingsMenu.Items.Add(updateNowItem);
+            }
             settingsMenu.ShowItemToolTips = true;
         }
 
@@ -1665,6 +1668,7 @@ namespace SerialScope
             base.OnShown(e);
             if (plotMode) ApplySplitRatio();   // the real height is only known once the window is shown
             if (startup.Connect || startup.Port != null) BeginInvoke(new MethodInvoker(ConnectFromCommandLine));
+            if (AppInfo.IsStoreApp) return;   // the Store keeps the app up to date
 
             // A newer version seen on an earlier check is shown straight away
             string known = settings.Get("latestVersion", null);

@@ -1,5 +1,7 @@
+using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 
 [assembly: AssemblyTitle("SerialScope")]
 [assembly: AssemblyDescription("A clean, lightweight serial monitor and plotter for Windows.")]
@@ -22,5 +24,25 @@ namespace SerialScope
         public const string ProfileUrl = "https://github.com/Tjs4002";
         public const string RepoUrl = "https://github.com/Tjs4002/SerialScope";
         public const string License = "MIT License";
+
+        // True when running as the Microsoft Store (MSIX) package. The Store updates the app itself,
+        // and the install folder is read-only, so update checks and portable mode are left out there.
+        public static readonly bool IsStoreApp = DetectPackage();
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        private static extern int GetCurrentPackageFullName(ref int length, StringBuilder name);
+
+        private static bool DetectPackage()
+        {
+            try
+            {
+                int length = 0;
+                return GetCurrentPackageFullName(ref length, null) != 15700;   // APPMODEL_ERROR_NO_PACKAGE
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return false;   // Windows 7: no packaged apps
+            }
+        }
     }
 }
