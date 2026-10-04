@@ -315,7 +315,7 @@ details > div { padding: 0 4px 22px; color: var(--muted); }
 .cta p { color: var(--muted); font-size: 17px; margin: 0 auto 28px; max-width: 520px; }
 
 /* Wordmark */
-.wordmark { padding: 24px 0 8px; }
+.wordmark { padding: 32px 0 0; }
 .wordmark-box { position: relative; height: clamp(130px, 25vw, 300px); font-family: var(--sans); }
 .wordmark-hint { text-align: center; color: var(--dim); font: 12px var(--mono); letter-spacing: .04em; margin-top: 4px; }
 .tech-text { position: relative; width: 100%; height: 100%; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
@@ -405,7 +405,14 @@ footer a:hover { color: var(--text); }
   </div>
 </header>
 
-<section style="padding-top:24px; padding-bottom:72px">
+<section class="wordmark" aria-label="SerialScope">
+  <div class="wrap">
+    <div class="wordmark-box"><div id="wordmark"></div></div>
+    <div class="wordmark-hint">Hover over a letter, or drag it.</div>
+  </div>
+</section>
+
+<section style="padding-top:40px; padding-bottom:72px">
   <div class="wrap">
     <div class="strip reveal">
       <div><strong>&lt; 250 KB</strong><span>A single portable .exe</span></div>
@@ -648,13 +655,6 @@ build.bat</pre>
         <a class="btn btn-ghost btn-lg" href="https://github.com/Tjs4002/SerialScope"><svg><use href="#i-star"/></svg>Star on GitHub</a>
       </div>
     </div>
-  </div>
-</section>
-
-<section class="wordmark" aria-label="SerialScope">
-  <div class="wrap">
-    <div class="wordmark-box"><div id="wordmark"></div></div>
-    <div class="wordmark-hint">Hover over a letter, or drag it.</div>
   </div>
 </section>
 
