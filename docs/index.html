@@ -127,8 +127,8 @@ nav.top .wrap { display: flex; align-items: center; gap: 28px; height: 64px; }
 .eyebrow:hover { text-decoration: none; border-color: #3d5045; color: var(--text); }
 .eyebrow .pill { background: rgba(34,197,94,.15); color: var(--green); border-radius: 999px; padding: 2px 9px; font-weight: 600; font-size: 12px; }
 h1 {
-  font-size: clamp(38px, 6.4vw, 68px); line-height: 1.04; letter-spacing: -.035em;
-  margin: 22px 0 18px; font-weight: 800;
+  font-size: clamp(24px, 3.4vw, 36px); line-height: 1.2; letter-spacing: -.025em;
+  margin: 0 0 14px; font-weight: 700;
 }
 h1 .accent {
   background: linear-gradient(180deg, #5df08f, #16a34a);
@@ -315,9 +315,7 @@ details > div { padding: 0 4px 22px; color: var(--muted); }
 .cta p { color: var(--muted); font-size: 17px; margin: 0 auto 28px; max-width: 520px; }
 
 /* Wordmark */
-.wordmark { padding: 32px 0 0; }
-.wordmark-box { position: relative; height: clamp(130px, 25vw, 300px); font-family: var(--sans); }
-.wordmark-hint { text-align: center; color: var(--dim); font: 12px var(--mono); letter-spacing: .04em; margin-top: 4px; }
+.hero-wordmark { position: relative; height: clamp(96px, 19vw, 200px); margin: 14px auto 0; font-family: var(--sans); }
 .tech-text { position: relative; width: 100%; height: 100%; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
 .tech-text-canvas { display: block; width: 100%; height: 100%; }
 
@@ -370,7 +368,8 @@ footer a:hover { color: var(--text); }
   <div class="wrap">
     <div class="hero-text">
       <a class="eyebrow" href="https://github.com/Tjs4002/SerialScope/releases/latest"><span class="pill" data-version>v1.2.0</span>Port settings, highlight rules, plot stats and more →</a>
-      <h1>The serial monitor<br>your board <span class="accent">deserves.</span></h1>
+      <div class="hero-wordmark"><div id="wordmark"></div></div>
+      <h1>The serial monitor your board <span class="accent">deserves.</span></h1>
       <p class="lede">SerialScope is a fast, free serial monitor and live plotter for Windows. Open it, pick your port and see what your ESP32 or Arduino is saying, as colour-coded text or as live graphs.</p>
       <div class="hero-cta">
         <a class="btn btn-primary btn-lg" href="https://github.com/Tjs4002/SerialScope/releases/latest/download/SerialScope.exe"><svg><use href="#i-download"/></svg>Download for Windows</a>
@@ -405,14 +404,7 @@ footer a:hover { color: var(--text); }
   </div>
 </header>
 
-<section class="wordmark" aria-label="SerialScope">
-  <div class="wrap">
-    <div class="wordmark-box"><div id="wordmark"></div></div>
-    <div class="wordmark-hint">Hover over a letter, or drag it.</div>
-  </div>
-</section>
-
-<section style="padding-top:40px; padding-bottom:72px">
+<section style="padding-top:24px; padding-bottom:72px">
   <div class="wrap">
     <div class="strip reveal">
       <div><strong>&lt; 250 KB</strong><span>A single portable .exe</span></div>
@@ -706,7 +698,8 @@ TechText(document.getElementById("wordmark"), {
   reveal: "letter",
   dashLength: 4,
   dashGap: 2,
-  specks: 15
+  specks: 15,
+  sweep: false
 });
 (function () {
   var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
