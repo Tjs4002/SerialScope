@@ -11,6 +11,10 @@
 </p>
 
 <p align="center">
+  <a href="https://apps.microsoft.com/detail/9NSVHTVWKC2X?mode=direct"><img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200" alt="Get it from Microsoft"></a>
+</p>
+
+<p align="center">
   <a href="https://tjs4002.github.io/SerialScope/"><b>Website</b></a>
   &nbsp;·&nbsp;
   <a href="https://github.com/Tjs4002/SerialScope/releases/latest"><b>Download</b></a>
@@ -30,7 +34,7 @@
 
 <br>
 
-**SerialScope** is a fast, good-looking serial monitor and plotter for Windows. Open it, pick your board's port and see what it's saying, as text or as live graphs. It's a single `.exe` of under 250 KB, with nothing to install.
+**SerialScope** is a fast, good-looking serial monitor and plotter for Windows. Open it, pick your board's port and see what it's saying, as text or as live graphs. It's a single `.exe` of under 250 KB, with nothing to install. It's also on the [Microsoft Store](https://apps.microsoft.com/detail/9NSVHTVWKC2X?mode=direct).
 
 <table>
   <tr>
@@ -92,6 +96,18 @@
 
 ## Download
 
+**Microsoft Store (recommended):** signed by Microsoft, updates automatically, and no SmartScreen warning.
+
+<a href="https://apps.microsoft.com/detail/9NSVHTVWKC2X?mode=direct"><img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200" alt="Get it from Microsoft"></a>
+
+Or from a terminal:
+
+```powershell
+winget install 9NSVHTVWKC2X
+```
+
+**Direct download:** a single `.exe` you can also run from a USB stick ([portable mode](#more-ways-to-run-it)).
+
 1. Open the [**latest release**](https://github.com/Tjs4002/SerialScope/releases/latest).
 2. Download **`SerialScope.exe`**.
 3. Run it. That's all.
@@ -105,7 +121,7 @@ scoop install https://github.com/Tjs4002/SerialScope/releases/latest/download/se
 Each release also includes `SHA256SUMS.txt`, so you can check your download with `Get-FileHash SerialScope.exe`.
 
 > [!NOTE]
-> **"Windows protected your PC"?** SerialScope isn't code-signed yet, so SmartScreen may warn you the first time. Click **More info → Run anyway**. Prefer not to trust a downloaded binary? [Build it yourself](#build-from-source) in a few seconds; every release is also built and tested publicly by [GitHub Actions](https://github.com/Tjs4002/SerialScope/actions).
+> **"Windows protected your PC"?** The downloaded `.exe` isn't code-signed yet, so SmartScreen may warn you the first time. Click **More info → Run anyway**, or install from the [Microsoft Store](https://apps.microsoft.com/detail/9NSVHTVWKC2X?mode=direct) instead, which is signed by Microsoft. Prefer not to trust a downloaded binary? [Build it yourself](#build-from-source) in a few seconds; every release is also built and tested publicly by [GitHub Actions](https://github.com/Tjs4002/SerialScope/actions).
 
 **Requirements:** Windows 10 or 11. Windows 7 and 8.1 with .NET Framework 4.5 or later should also work.
 
@@ -207,7 +223,7 @@ SerialScope.exe --port COM3 --baud 115200 --connect --plot
 | `--theme dark` / `--theme light` | Choose the theme |
 | `--help` | Show all options |
 
-**Portable mode.** Turn on ⚙ **Settings → Portable mode** and SerialScope keeps its settings in `SerialScope.ini` next to the `.exe`, and session logs in a `Logs` folder beside it. Copy the folder to a USB stick and your setup comes with you.
+**Portable mode** (downloaded `.exe` only). Turn on ⚙ **Settings → Portable mode** and SerialScope keeps its settings in `SerialScope.ini` next to the `.exe`, and session logs in a `Logs` folder beside it. Copy the folder to a USB stick and your setup comes with you.
 
 ## Keyboard shortcuts
 
@@ -306,7 +322,7 @@ That's a USB-serial adapter glitch, usually after switching flow control or righ
 <details>
 <summary><b>Does SerialScope connect to the internet?</b></summary>
 
-Only to check for updates: at most twice a day it asks GitHub's public API for the latest release version. No data about you or your devices is sent. Turn it off under ⚙ **Settings → Check for updates automatically**. Crash reports are only sent if you click **Report on GitHub** and submit the form yourself.
+Only to check for updates: at most twice a day it asks GitHub's public API for the latest release version. No data about you or your devices is sent. Turn it off under ⚙ **Settings → Check for updates automatically**. The Microsoft Store version doesn't check at all, because the Store keeps it up to date. Crash reports are only sent if you click **Report on GitHub** and submit the form yourself.
 </details>
 
 <details>

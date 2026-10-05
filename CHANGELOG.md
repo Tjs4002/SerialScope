@@ -6,6 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Available on the [Microsoft Store](https://apps.microsoft.com/detail/9NSVHTVWKC2X)**, signed by Microsoft and updated automatically. Also installs with `winget install 9NSVHTVWKC2X`.
 - Project website at [tjs4002.github.io/SerialScope](https://tjs4002.github.io/SerialScope/), served by GitHub Pages from the `docs` folder.
 
 - Microsoft Store package (`tools\make-msix.ps1`). In the Store version, updates come from the Store, so the update check and portable mode are hidden.

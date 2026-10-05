@@ -2,9 +2,11 @@
 
 ## Code signing
 
-SerialScope releases are **not code-signed yet**, so Windows SmartScreen may show a warning the first time you run a downloaded copy. Click **More info → Run anyway**, or install with [Scoop](README.md#download), which usually avoids the warning.
+The [Microsoft Store version](https://apps.microsoft.com/detail/9NSVHTVWKC2X) is signed by Microsoft when it is published, so it installs without any warning.
 
-Until releases are signed, you can check that a download is genuine:
+The `SerialScope.exe` on the GitHub releases page is **not code-signed yet**, so Windows SmartScreen may show a warning the first time you run a downloaded copy. Click **More info → Run anyway**, install from the Microsoft Store instead, or use [Scoop](README.md#download), which usually avoids the warning.
+
+Until the GitHub releases are signed, you can check that a download is genuine:
 
 - Every release is built from this repository's source code by [GitHub Actions](https://github.com/Tjs4002/SerialScope/actions), in public, and runs the automated tests before it is published.
 - Each release includes `SHA256SUMS.txt`. Compare it with `Get-FileHash SerialScope.exe` in PowerShell.
@@ -27,7 +29,7 @@ SerialScope does not collect, store or send any personal data, serial data or us
 
 It connects to one networked system:
 
-- **Update check:** at most twice a day it asks GitHub's public API (`api.github.com`) for the latest SerialScope release version. The request contains no information about you or your devices beyond what any web request carries (such as your IP address, which GitHub sees). It can be turned off under ⚙ **Settings → Check for updates automatically**.
+- **Update check** (downloaded `.exe` only; the Microsoft Store version has none): at most twice a day it asks GitHub's public API (`api.github.com`) for the latest SerialScope release version. The request contains no information about you or your devices beyond what any web request carries (such as your IP address, which GitHub sees). It can be turned off under ⚙ **Settings → Check for updates automatically**.
 
 Apart from that, SerialScope will not transfer any information to other networked systems unless you specifically request it, for example by clicking **Report on GitHub** in the crash screen, which opens a pre-filled bug report in your browser that you choose whether to submit.
 

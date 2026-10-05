@@ -275,8 +275,11 @@ h3 { font-size: 18px; letter-spacing: -.01em; margin: 0 0 8px; }
 .panel > p { color: var(--muted); margin-top: 0; }
 
 /* Download */
-.dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-@media (max-width: 900px) { .dl { grid-template-columns: 1fr; } }
+.dl { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+@media (max-width: 760px) { .dl { grid-template-columns: 1fr; } }
+.ms-badge { display: inline-block; margin: 4px 0 18px; line-height: 0; transition: transform .15s; }
+.ms-badge:hover { transform: translateY(-1px); }
+.ms-badge img { width: 200px; height: auto; }
 .dl .panel { display: flex; flex-direction: column; }
 .dl .panel .code { margin-top: auto; }
 .dl .panel p { color: var(--muted); font-size: 15px; }
@@ -343,6 +346,7 @@ footer a:hover { color: var(--text); }
   <symbol id="i-github" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.7 5.38-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
   <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16l-1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></symbol>
   <symbol id="i-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/></symbol>
 </svg>
 
@@ -372,13 +376,13 @@ footer a:hover { color: var(--text); }
       <h1>The serial monitor your board <span class="accent">deserves.</span></h1>
       <p class="lede">SerialScope is a fast, free serial monitor and live plotter for Windows. Open it, pick your port and see what your ESP32 or Arduino is saying, as colour-coded text or as live graphs.</p>
       <div class="hero-cta">
-        <a class="btn btn-primary btn-lg" href="https://github.com/Tjs4002/SerialScope/releases/latest/download/SerialScope.exe"><svg><use href="#i-download"/></svg>Download for Windows</a>
-        <a class="btn btn-ghost btn-lg" href="https://github.com/Tjs4002/SerialScope"><svg><use href="#i-github"/></svg>View on GitHub</a>
+        <a class="btn btn-primary btn-lg" href="https://apps.microsoft.com/detail/9NSVHTVWKC2X?mode=direct"><svg><use href="#i-store"/></svg>Get it from Microsoft Store</a>
+        <a class="btn btn-ghost btn-lg" href="https://github.com/Tjs4002/SerialScope/releases/latest/download/SerialScope.exe"><svg><use href="#i-download"/></svg>Download .exe</a>
       </div>
       <div class="hero-meta">
         <span><svg><use href="#i-check"/></svg>Free and open source</span>
         <span><svg><use href="#i-check"/></svg>One .exe, under 250 KB</span>
-        <span><svg><use href="#i-check"/></svg>Nothing to install</span>
+        <span><svg><use href="#i-check"/></svg>On the Microsoft Store</span>
         <span><svg><use href="#i-check"/></svg>Windows 10 and 11</span>
       </div>
     </div>
@@ -568,8 +572,17 @@ footer a:hover { color: var(--text); }
     </div>
     <div class="dl">
       <div class="panel reveal">
-        <h3>Direct download<span class="badge-rec">Recommended</span></h3>
-        <p>Download <code>SerialScope.exe</code> and run it. No installer, no account.</p>
+        <h3>Microsoft Store<span class="badge-rec">Recommended</span></h3>
+        <p>Signed by Microsoft, updates automatically, and no SmartScreen warning.</p>
+        <a class="ms-badge" href="https://apps.microsoft.com/detail/9NSVHTVWKC2X?mode=direct"><img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Get it from Microsoft" width="200" height="72"></a>
+        <div class="code">
+          <div class="code-head">Or with winget<button class="copy" data-copy="code-winget"><svg><use href="#i-copy"/></svg>Copy</button></div>
+<pre id="code-winget">winget install 9NSVHTVWKC2X</pre>
+        </div>
+      </div>
+      <div class="panel reveal">
+        <h3>Direct download</h3>
+        <p>Download <code>SerialScope.exe</code> and run it. No installer, no account. Also runs from a USB stick in portable mode.</p>
         <a class="btn btn-primary" style="margin-top:auto; justify-content:center" href="https://github.com/Tjs4002/SerialScope/releases/latest/download/SerialScope.exe"><svg><use href="#i-download"/></svg>SerialScope.exe <span data-version style="opacity:.75; font-weight:500">v1.2.0</span></a>
       </div>
       <div class="panel reveal">
@@ -592,7 +605,7 @@ build.bat</pre>
       </div>
     </div>
     <div class="note reveal">
-      <strong>"Windows protected your PC"?</strong> SerialScope isn't code-signed yet, so SmartScreen may warn you the first time. Click <b>More info → Run anyway</b>. Every release is built and tested publicly by <a href="https://github.com/Tjs4002/SerialScope/actions">GitHub Actions</a> and comes with a <code>SHA256SUMS.txt</code> file so you can check your download.
+      <strong>"Windows protected your PC"?</strong> The downloaded <code>.exe</code> isn't code-signed yet, so SmartScreen may warn you the first time. Click <b>More info → Run anyway</b>, or install from the <a href="https://apps.microsoft.com/detail/9NSVHTVWKC2X?mode=direct">Microsoft Store</a> instead, which is signed by Microsoft. Every release is built and tested publicly by <a href="https://github.com/Tjs4002/SerialScope/actions">GitHub Actions</a> and comes with a <code>SHA256SUMS.txt</code> file so you can check your download.
     </div>
   </div>
 </section>
@@ -622,7 +635,7 @@ build.bat</pre>
       </details>
       <details>
         <summary>Does SerialScope connect to the internet?</summary>
-        <div>Only to check for updates: at most twice a day it asks GitHub's public API for the latest release version. No data about you or your devices is sent, and you can turn it off in Settings. See the <a href="https://github.com/Tjs4002/SerialScope/blob/main/CODE_SIGNING.md#privacy-policy">privacy policy</a>.</div>
+        <div>Only to check for updates: at most twice a day it asks GitHub's public API for the latest release version. No data about you or your devices is sent, and you can turn it off in Settings. The Microsoft Store version doesn't check at all, because the Store keeps it up to date. See the <a href="https://github.com/Tjs4002/SerialScope/blob/main/CODE_SIGNING.md#privacy-policy">privacy policy</a>.</div>
       </details>
       <details>
         <summary>Does it work on macOS or Linux?</summary>
@@ -643,7 +656,7 @@ build.bat</pre>
       <h2 style="margin-top:0">Give your board a better window.</h2>
       <p>Free, open source and under 250 KB. If it saves you time, a star on GitHub helps other people find it.</p>
       <div class="hero-cta">
-        <a class="btn btn-primary btn-lg" href="https://github.com/Tjs4002/SerialScope/releases/latest/download/SerialScope.exe"><svg><use href="#i-download"/></svg>Download for Windows</a>
+        <a class="btn btn-primary btn-lg" href="https://apps.microsoft.com/detail/9NSVHTVWKC2X?mode=direct"><svg><use href="#i-store"/></svg>Get it from Microsoft Store</a>
         <a class="btn btn-ghost btn-lg" href="https://github.com/Tjs4002/SerialScope"><svg><use href="#i-star"/></svg>Star on GitHub</a>
       </div>
     </div>
